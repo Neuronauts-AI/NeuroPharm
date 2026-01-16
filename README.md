@@ -17,6 +17,7 @@ Doktorların hastalara ilaç yazarken kullanabilecekleri modern bir web uygulama
 - **TypeScript** - Tip güvenliği
 - **Tailwind CSS** - Modern styling
 - **API Routes** - Backend entegrasyonu
+- **Docker** - Containerization ve kolay deployment
 
 ## Kurulum
 
@@ -43,6 +44,59 @@ npm run dev
 ```
 
 5. Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
+
+## Docker ile Kurulum
+
+Docker kullanarak uygulamayı çalıştırmak için:
+
+### Docker Compose ile (Önerilen)
+
+1. Webhook URL'inizi ayarlamak için `docker-compose.yaml` dosyasını düzenleyin (opsiyonel):
+```yaml
+environment:
+  - DRUG_ANALYSIS_WEBHOOK_URL=https://your-webhook-url.com/analyze
+```
+
+2. Docker container'ı başlatın:
+```bash
+docker-compose up -d
+```
+
+3. Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
+
+4. Container'ı durdurmak için:
+```bash
+docker-compose down
+```
+
+### Dockerfile ile Manuel Kurulum
+
+1. Docker image'ı build edin:
+```bash
+docker build -t doctor-prescription-panel .
+```
+
+2. Container'ı çalıştırın:
+```bash
+docker run -p 3000:3000 \
+  -e DRUG_ANALYSIS_WEBHOOK_URL=https://your-webhook-url.com/analyze \
+  doctor-prescription-panel
+```
+
+3. Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
+
+### Docker Logları
+
+Container loglarını görmek için:
+```bash
+docker-compose logs -f
+```
+
+veya
+
+```bash
+docker logs -f doctor-prescription-panel
+```
 
 ## Webhook Entegrasyonu
 
@@ -115,6 +169,9 @@ druginteraction/
 │   └── index.ts               # TypeScript tipleri
 ├── lib/
 │   └── mockData.ts            # Örnek veriler
+├── Dockerfile                 # Docker image tanımı
+├── docker-compose.yaml        # Docker Compose konfigürasyonu
+├── .dockerignore              # Docker build exclusions
 └── README.md
 ```
 
