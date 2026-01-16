@@ -102,6 +102,33 @@ docker logs -f doctor-prescription-panel
 
 Uygulamanın ilaç analizi için bir webhook endpoint'e ihtiyacı vardır.
 
+### n8n ile Webhook Kurulumu (Önerilen)
+
+n8n, workflow automation aracıdır ve webhook oluşturmak için idealdir. Detaylı kurulum için [N8N_SETUP.md](./N8N_SETUP.md) dosyasına bakın.
+
+**Hızlı Başlangıç:**
+
+1. n8n'i Docker ile başlatın:
+```bash
+docker run -d --name n8n -p 5678:5678 -v ~/.n8n:/home/node/.n8n docker.n8n.io/n8nio/n8n
+```
+
+2. Hazır workflow'u import edin:
+   - http://localhost:5678 adresini açın
+   - `n8n-workflow.json` dosyasını import edin
+   - Workflow'u aktif edin
+
+3. Webhook URL'ini `.env` dosyasına ekleyin:
+```bash
+DRUG_ANALYSIS_WEBHOOK_URL=http://localhost:5678/webhook/drug-analysis
+```
+
+4. Uygulamayı başlatın ve test edin!
+
+### Manuel Webhook Oluşturma
+
+Kendi webhook endpoint'inizi oluşturmak isterseniz:
+
 ### İstek Formatı
 
 ```typescript

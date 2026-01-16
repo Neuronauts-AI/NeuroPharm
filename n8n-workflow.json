@@ -1,0 +1,60 @@
+{
+  "name": "Drug Interaction Analysis",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "drug-analysis",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "functionCode": "// İlaç etkileşimlerini analiz et\nconst currentMeds = $json.currentMedications || [];\nconst newMeds = $json.newMedications || [];\nconst conditions = $json.conditions || [];\n\n// İlaç adlarını topla\nconst allMedicines = [\n  ...currentMeds.map(m => m.name.toLowerCase()),\n  ...newMeds.map(m => m.name.toLowerCase())\n];\n\n// Risk skorunu hesapla\nlet riskScore = 0;\n\n// Bilinen riskli kombinasyonlar\nconst riskyInteractions = {\n  'aspirin+ibuprofen': { risk: 85, message: 'Mide kanaması riski yüksek' },\n  'warfarin+aspirin': { risk: 90, message: 'Kanama riski çok yüksek' },\n  'metformin+alkol': { risk: 70, message: 'Laktik asidoz riski' },\n  'simvastatin+amlodipine': { risk: 60, message: 'Kas hasarı riski artabilir' }\n};\n\n// Etkileşim kontrolü\nfor (let i = 0; i < allMedicines.length; i++) {\n  for (let j = i + 1; j < allMedicines.length; j++) {\n    const combo = `${allMedicines[i]}+${allMedicines[j]}`;\n    const reverseCombo = `${allMedicines[j]}+${allMedicines[i]}`;\n    \n    if (riskyInteractions[combo]) {\n      riskScore = Math.max(riskScore, riskyInteractions[combo].risk);\n    } else if (riskyInteractions[reverseCombo]) {\n      riskScore = Math.max(riskScore, riskyInteractions[reverseCombo].risk);\n    }\n  }\n}\n\n// Hastalık ve ilaç sayısına göre ek risk\nif (riskScore === 0) {\n  riskScore = Math.min(20 + (conditions.length * 5) + (allMedicines.length * 3), 100);\n}\n\n// Alternatif öneriler\nlet alternatives = \"\";\nif (allMedicines.includes('aspirin') && allMedicines.includes('ibuprofen')) {\n  alternatives = \"Aspirin ve Ibuprofen kombinasyonu yerine:\\n- Paracetamol (ağrı için)\\n- Aspirin'i tek başına kullanın\\n- Gastro-koruyucu ilaç ekleyin\";\n} else if (allMedicines.includes('warfarin')) {\n  alternatives = \"Warfarin kullanıyorsanız:\\n- Düzenli INR takibi yapın\\n- Yeşil yapraklı sebzeleri dengeli tüketin\\n- Yeni ilaç eklerken doktorunuza danışın\";\n} else if (riskScore >= 40) {\n  alternatives = \"İlaç kombinasyonunuz izleme gerektirir. Alternatif öneriler için hekiminize danışın.\";\n} else {\n  alternatives = \"Mevcut ilaç kombinasyonu uygun görünmektedir.\";\n}\n\n// Açıklama\nconst newMedsList = newMeds.map(m => m.name).join(', ');\nconst currentMedsList = currentMeds.map(m => m.name).join(', ');\nconst conditionsList = conditions.join(', ');\n\nlet explanation = `İlaç Etkileşim Analiz Raporu\\n\\n`;\nexplanation += `📊 Genel Bilgiler:\\n`;\nexplanation += `- Hasta hastalıkları: ${conditionsList || 'Belirtilmemiş'}\\n`;\nexplanation += `- Mevcut ilaçlar (${currentMeds.length}): ${currentMedsList || 'Yok'}\\n`;\nexplanation += `- Yeni eklenen ilaçlar (${newMeds.length}): ${newMedsList}\\n\\n`;\n\nexplanation += `⚠️ Risk Değerlendirmesi:\\n`;\nif (riskScore >= 70) {\n  explanation += `YÜKSEK RİSK tespit edildi (${riskScore}/100)\\n`;\n  explanation += `Bu ilaç kombinasyonu ciddi yan etkilere yol açabilir.\\n`;\n  explanation += `Mutlaka hekiminizle görüşün ve onay alın.\\n`;\n} else if (riskScore >= 40) {\n  explanation += `ORTA RİSK tespit edildi (${riskScore}/100)\\n`;\n  explanation += `Bu ilaç kombinasyonu izleme gerektirir.\\n`;\n  explanation += `Yan etkilere dikkat edin ve düzenli kontrol yaptırın.\\n`;\n} else {\n  explanation += `DÜŞÜK RİSK tespit edildi (${riskScore}/100)\\n`;\n  explanation += `İlaç kombinasyonu genel olarak güvenli görünmektedir.\\n`;\n  explanation += `Normal kullanım talimatlarına uyun.\\n`;\n}\n\nexplanation += `\\n💊 Öneriler:\\n`;\nexplanation += `- İlaçları düzenli saatlerde alın\\n`;\nexplanation += `- Yan etki gözlemlerseniz doktorunuza bildirin\\n`;\nexplanation += `- İlaç dozlarını kendiniz değiştirmeyin\\n`;\n\nif (conditions.includes('Diyabet') || conditions.includes('Hipertansiyon')) {\n  explanation += `- Kronik hastalığınız için düzenli kontrol önemlidir\\n`;\n}\n\n// Response\nreturn {\n  riskScore: riskScore,\n  alternativeMedicines: alternatives,\n  explanation: explanation\n};"
+      },
+      "name": "Analyze Drug Interactions",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Analyze Drug Interactions",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Drug Interactions": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
