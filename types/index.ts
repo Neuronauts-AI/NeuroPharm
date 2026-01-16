@@ -24,14 +24,17 @@ export interface Prescription {
 }
 
 export interface AnalysisRequest {
-  patientId: string;
-  currentMedications: Medicine[];
-  newMedications: Medicine[];
-  conditions: string[];
+  age: number;
+  gender: 'male' | 'female' | 'other';
+  conditions: string[];            // Hastalıklar
+  currentMedications: Medicine[];  // Kullanılan ilaçlar
+  newMedications: Medicine[];      // Yazılacak ilaçlar
 }
 
 export interface AnalysisResponse {
-  riskScore: number;
-  alternativeMedicines: string;
-  explanation: string;
+  risk_score: number; // 1-10 arası
+  alternative_suggestion: string;
+  description: string;
+  has_alternative: boolean;
+  results_found: boolean;
 }

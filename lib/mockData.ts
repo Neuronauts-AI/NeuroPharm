@@ -6,7 +6,7 @@ export const mockMedicines: Medicine[] = [
   { id: '3', name: 'Ibuprofen', dosage: '400mg', frequency: 'Günde 2 kez' },
   { id: '4', name: 'Amoxicillin', dosage: '500mg', frequency: 'Günde 3 kez' },
   { id: '5', name: 'Omeprazole', dosage: '20mg', frequency: 'Günde 1 kez' },
-  { id: '6', name: 'Metformin', dosage: '850mg', frequency: 'Günde 2 kez' },
+  { id: '6', name: 'Warfarin', dosage: '850mg', frequency: 'Günde 2 kez' },
   { id: '7', name: 'Atorvastatin', dosage: '10mg', frequency: 'Günde 1 kez' },
   { id: '8', name: 'Lisinopril', dosage: '10mg', frequency: 'Günde 1 kez' },
   { id: '9', name: 'Levothyroxine', dosage: '50mcg', frequency: 'Günde 1 kez' },

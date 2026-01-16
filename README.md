@@ -161,9 +161,11 @@ Content-Type: application/json
 
 ```typescript
 {
-  "riskScore": number,        // 0-100 arası risk skoru
-  "alternativeMedicines": string,  // Alternatif ilaç önerileri
-  "explanation": string       // Detaylı açıklama
+  "risk_score": number,           // 1-10 arası risk skoru
+  "alternative_suggestion": string,  // Alternatif ilaç önerisi
+  "description": string,          // Detaylı açıklama
+  "has_alternative": boolean,     // Alternatif öneri var mı?
+  "results_found": boolean        // Etkileşim verisi bulundu mu?
 }
 ```
 

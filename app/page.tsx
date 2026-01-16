@@ -81,10 +81,11 @@ export default function Home() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          patientId: selectedPatient.id,
+          age: selectedPatient.age,
+          gender: selectedPatient.gender,
+          conditions: selectedPatient.conditions,
           currentMedications: selectedPatient.currentMedications,
           newMedications: selectedMedicines,
-          conditions: selectedPatient.conditions,
         }),
       });
 

@@ -12,13 +12,20 @@ export async function POST(request: NextRequest) {
       // Webhook URL yoksa demo response döndür
       console.warn('DRUG_ANALYSIS_WEBHOOK_URL not configured, using demo response');
 
-      // Demo response - gerçek webhook yanıtını simüle eder
+      // Demo response - gerçek webhook yanıtını simüle eder (risk_score: 1-10)
+      const hasInteraction = data.newMedications.length > 0 && data.currentMedications.length > 0;
+      const riskScore = hasInteraction ? Math.floor(Math.random() * 6) + 4 : Math.floor(Math.random() * 3) + 1; // 1-10 arası
+
       const demoResponse: AnalysisResponse = {
-        riskScore: Math.floor(Math.random() * 100),
-        alternativeMedicines: data.newMedications.length > 0
-          ? `Alternatif olarak ${data.newMedications[0].name} yerine başka bir ilaç düşünülebilir.`
-          : 'Alternatif ilaç önerisi bulunmamaktadır.',
-        explanation: `${data.newMedications.length} ilaç analiz edildi. Hasta ${data.conditions.length} hastalığa sahip ve ${data.currentMedications.length} ilaç kullanmaktadır. Risk analizi tamamlandı.`,
+        risk_score: riskScore,
+        alternative_suggestion: hasInteraction && riskScore >= 5
+          ? `${data.newMedications[0].name} yerine daha düşük etkileşim riski olan alternatif ilaçlar değerlendirilebilir.`
+          : 'Alternatif gerekmemektedir.',
+        description: hasInteraction
+          ? `${data.newMedications.length} yeni ilaç, ${data.currentMedications.length} mevcut ilaç ile analiz edildi. Hasta ${data.conditions.length} hastalığa sahip. Risk değerlendirmesi tamamlandı.`
+          : 'openFDA veritabanında belirtilen ilaç etkileşimi veya kontraendikasyonuna dair spesifik bir kayıt bulunamadı. Mevcut bilgilere göre bilinen yüksek bir risk tespit edilememiştir.',
+        has_alternative: hasInteraction && riskScore >= 5,
+        results_found: hasInteraction,
       };
 
       return NextResponse.json(demoResponse);
@@ -37,8 +44,12 @@ export async function POST(request: NextRequest) {
       throw new Error(`Webhook request failed: ${response.statusText}`);
     }
 
-    const result: AnalysisResponse = await response.json();
-    return NextResponse.json(result);
+    const result = await response.json();
+    console.log('Webhook response:', JSON.stringify(result, null, 2));
+
+    // Webhook yanıtı "output" içinde geliyorsa onu çıkar
+    const analysisResult = result.output || result;
+    return NextResponse.json(analysisResult);
   } catch (error) {
     console.error('Analysis error:', error);
     return NextResponse.json(
