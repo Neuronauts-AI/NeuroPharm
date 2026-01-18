@@ -80,15 +80,15 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <h2 className="text-2xl font-bold mb-4">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-[var(--card-bg)] rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-[var(--card-border)]">
+        <h2 className="text-2xl font-bold mb-4 text-[var(--foreground)]">
           {patient ? 'Hasta Düzenle' : 'Yeni Hasta Ekle'}
         </h2>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[var(--text-muted)] mb-1">
               Ad Soyad *
             </label>
             <input
@@ -96,13 +96,13 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
               required
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-3 py-2 border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--input-bg)] text-[var(--foreground)]"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[var(--text-muted)] mb-1">
                 Yaş *
               </label>
               <input
@@ -111,18 +111,18 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
                 min="0"
                 value={formData.age || ''}
                 onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value) || 0 })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--input-bg)] text-[var(--foreground)]"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-[var(--text-muted)] mb-1">
                 Cinsiyet *
               </label>
               <select
                 value={formData.gender}
                 onChange={(e) => setFormData({ ...formData, gender: e.target.value as 'male' | 'female' | 'other' })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--input-bg)] text-[var(--foreground)]"
               >
                 <option value="male">Erkek</option>
                 <option value="female">Kadın</option>
@@ -132,7 +132,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[var(--text-muted)] mb-1">
               Hastalıklar
             </label>
             <div className="flex gap-2 mb-2">
@@ -142,7 +142,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
                 onChange={(e) => setConditionInput(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCondition())}
                 placeholder="Hastalık ekle..."
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="flex-1 px-3 py-2 border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--input-bg)] text-[var(--foreground)]"
               />
               <button
                 type="button"
@@ -156,13 +156,13 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
               {formData.conditions.map((condition, index) => (
                 <span
                   key={index}
-                  className="bg-red-100 text-red-700 px-3 py-1 rounded-full text-sm flex items-center gap-2"
+                  className="bg-red-500/20 text-red-400 px-3 py-1 rounded-full text-sm flex items-center gap-2"
                 >
                   {condition}
                   <button
                     type="button"
                     onClick={() => handleRemoveCondition(index)}
-                    className="hover:text-red-900"
+                    className="hover:text-red-300"
                   >
                     ×
                   </button>
@@ -172,7 +172,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-[var(--text-muted)] mb-1">
               Kullandığı İlaçlar
             </label>
             <div className="space-y-2 mb-2">
@@ -181,7 +181,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
                 value={medicationInput.name}
                 onChange={(e) => setMedicationInput({ ...medicationInput, name: e.target.value })}
                 placeholder="İlaç adı..."
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full px-3 py-2 border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--input-bg)] text-[var(--foreground)]"
               />
               <div className="grid grid-cols-2 gap-2">
                 <input
@@ -189,14 +189,14 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
                   value={medicationInput.dosage}
                   onChange={(e) => setMedicationInput({ ...medicationInput, dosage: e.target.value })}
                   placeholder="Doz (örn: 100mg)"
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-2 border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--input-bg)] text-[var(--foreground)]"
                 />
                 <input
                   type="text"
                   value={medicationInput.frequency}
                   onChange={(e) => setMedicationInput({ ...medicationInput, frequency: e.target.value })}
                   placeholder="Sıklık (örn: Günde 2 kez)"
-                  className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="px-3 py-2 border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--input-bg)] text-[var(--foreground)]"
                 />
               </div>
               <button
@@ -211,18 +211,18 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
               {formData.currentMedications.map((med, index) => (
                 <div
                   key={index}
-                  className="bg-blue-50 p-3 rounded-md flex justify-between items-center"
+                  className="bg-blue-500/10 border border-blue-500/30 p-3 rounded-md flex justify-between items-center"
                 >
                   <div>
-                    <p className="font-medium">{med.name}</p>
-                    <p className="text-sm text-gray-600">
+                    <p className="font-medium text-[var(--foreground)]">{med.name}</p>
+                    <p className="text-sm text-[var(--text-muted)]">
                       {med.dosage} - {med.frequency}
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={() => handleRemoveMedication(index)}
-                    className="text-red-600 hover:text-red-800"
+                    className="text-red-500 hover:text-red-400"
                   >
                     ×
                   </button>
@@ -241,7 +241,7 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
             <button
               type="button"
               onClick={onCancel}
-              className="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400"
+              className="flex-1 bg-[var(--hover-bg)] text-[var(--foreground)] px-4 py-2 rounded-md hover:opacity-80 border border-[var(--card-border)]"
             >
               İptal
             </button>
