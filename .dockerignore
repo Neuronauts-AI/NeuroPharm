@@ -34,12 +34,20 @@ Thumbs.db
 .git
 .gitignore
 
-# Docker
-Dockerfile
-docker-compose.yaml
-.dockerignore
-
 # Misc
-README.md
 .eslintcache
-*.md
+
+# Python virtual environment (exclude from Docker build)
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+.mypy_cache/
+.pytest_cache/
+
+# Note: RAG folder is NOT excluded - it's needed for backend
+# Note: Dockerfile files are NOT excluded - they need to be in context

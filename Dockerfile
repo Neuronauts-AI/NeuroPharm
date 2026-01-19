@@ -17,7 +17,13 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Disable telemetry during build
+# Build arguments for environment variables
+ARG PYTHON_API_URL=http://backend:8080/analyze
+ARG N8N_WEBHOOK_URL
+
+# Set environment variables for build
+ENV PYTHON_API_URL=${PYTHON_API_URL}
+ENV N8N_WEBHOOK_URL=${N8N_WEBHOOK_URL}
 ENV NEXT_TELEMETRY_DISABLED=1
 
 # Build the application

@@ -278,12 +278,23 @@ Yukarıdaki bilgilere göre ilaç etkileşimi analizi yap ve sadece JSON format�
 
 # FastAPI entegrasyonu için (opsiyonel)
 def create_fastapi_app():
-    """FastAPI uygulaması oluşturur"""
+    """FastAPI uygulaması oluşturur - RAG-based analysis"""
     try:
         from fastapi import FastAPI
+        from fastapi.middleware.cors import CORSMiddleware
         from pydantic import BaseModel
+        from rag_analyzer import get_analyzer
 
-        app = FastAPI(title="Drug Interaction Analysis API")
+        app = FastAPI(title="Drug Interaction Analysis API (RAG-based)")
+
+        # CORS middleware ekle
+        app.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
         class MedicationItem(BaseModel):
             id: str
@@ -298,9 +309,29 @@ def create_fastapi_app():
             currentMedications: list[MedicationItem]
             newMedications: list[MedicationItem]
 
+        @app.get("/")
+        async def root():
+            return {
+                "service": "Drug Interaction Analysis API", 
+                "version": "2.0-RAG",
+                "status": "running"
+            }
+
+        @app.get("/health")
+        async def health():
+            analyzer = get_analyzer()
+            stats = analyzer.rag_loader.get_stats()
+            return {
+                "status": "healthy",
+                "rag_stats": stats
+            }
+
         @app.post("/analyze")
         async def analyze(request: AnalysisRequest):
-            result = analyze_drug_interactions(
+            """RAG-based ilaç etkileşim analizi"""
+            analyzer = get_analyzer()
+            
+            result = analyzer.analyze(
                 age=request.age,
                 gender=request.gender,
                 conditions=request.conditions,
@@ -311,8 +342,9 @@ def create_fastapi_app():
 
         return app
 
-    except ImportError:
-        print("FastAPI yüklü değil. 'pip install fastapi uvicorn' ile yükleyebilirsiniz.")
+    except ImportError as e:
+        print(f"FastAPI yüklü değil: {e}")
+        print("'pip install fastapi uvicorn' ile yükleyebilirsiniz.")
         return None
 
 
