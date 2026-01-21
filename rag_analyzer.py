@@ -83,19 +83,23 @@ class DrugInteractionAnalyzer:
         monitoring = self._get_monitoring_recommendations(drug_data, current_med_names, new_med_names)
         
         # Description oluştur
-        description = self._generate_description(found_drugs, not_found_drugs, risk_level, total_risk)
+        clinical_summary = self._generate_description(found_drugs, not_found_drugs, risk_level, total_risk)
+        
+        # Etkileşim detayları
+        interaction_details = self._get_interaction_details(drug_data, current_med_names, new_med_names, total_risk) if total_risk >= 30 else None
         
         return {
             "risk_score": risk_score,
-            "description": description,
             "results_found": len(found_drugs) > 0,
-            "risk_breakdown": risk_breakdown,
-            "alternatives": alternatives,
-            "monitoring": monitoring,
-            "dosage_adjustments": [],  # TODO: Implement
-            "pregnancy_warnings": [],  # TODO: Implement
-            "alternative_suggestion": alternatives[0]['action'] if alternatives else "Gerek yok",
-            "has_alternative": len(alternatives) > 0
+            "clinical_summary": clinical_summary,
+            
+            # Optional fields - only include if have data
+            "interaction_details": interaction_details,
+            "alternatives": alternatives if alternatives else None,
+            "monitoring_plan": monitoring if monitoring else None,
+            "dosage_warnings": None,  # TODO: Implement
+            "special_population_alerts": None,  # TODO: Implement  
+            "patient_safety_notes": None,  # TODO: Implement
         }
     
     def _calculate_risk_breakdown(
@@ -215,13 +219,47 @@ class DrugInteractionAnalyzer:
         else:
             return "LOW"
     
+    def _get_interaction_details(
+        self,
+        drug_data: Dict[str, Optional[Dict]],
+        current_meds: List[str],
+        new_meds: List[str],
+        total_risk: int
+    ) -> List[Dict]:
+        """Etkileşim detaylarını oluştur - YENİ FORMAT"""
+        interactions = []
+        
+        # Yüksek riskli etkileşimleri tespit et
+        for new_med in new_meds:
+            for current_med in current_meds:
+                # Basit etkileşim kontrolü - gerçek implementasyon RAG data kullanmalı
+                severity = "High" if total_risk >= 70 else "Medium" if total_risk >= 40 else "Low"
+                
+                # Warfarin + NSAİD gibi bilinen yüksek riskli kombinasyonlar
+                if ('WARFARIN' in current_med.upper() or 'WARFARIN' in new_med.upper()) and \
+                   ('ASPIRIN' in current_med.upper() or 'ASPIRIN' in new_med.upper() or \
+                    'IBUPROFEN' in current_med.upper() or 'IBUPROFEN' in new_med.upper()):
+                    interactions.append({
+                        "drugs": [current_med, new_med],
+                        "severity": "High",
+                        "mechanism": "Warfarin ile NSAİD kombinasyonu kanama riskini önemli ölçüde artırır"
+                    })
+                elif total_risk >= 40:  # Orta-yüksek risk varsa generic ekle
+                    interactions.append({
+                        "drugs": [current_med, new_med],
+                        "severity": severity,
+                        "mechanism": f"{current_med} ve {new_med} arasında potansiyel etkileşim tespit edildi"
+                    })
+        
+        return interactions[:5]  # Max 5 etkileşim
+    
     def _get_alternatives(
         self,
         drug_data: Dict[str, Optional[Dict]],
         new_meds: List[str],
         total_risk: int
     ) -> List[Dict]:
-        """Alternatif ilaç önerileri oluştur"""
+        """Alternatif ilaç önerileri oluştur - YENİ FORMAT"""
         alternatives = []
         
         if total_risk < 61:  # Sadece yüksek risk durumunda alternatif öner
@@ -236,26 +274,27 @@ class DrugInteractionAnalyzer:
                 continue
             
             # Her ilaç için uygun alternatif bul
-            # Örnek: Aspirin için anti-platelet alternatifleri
             if 'ASPIRIN' in new_med.upper():
                 alt_info = alt_recommendations.get('aspirin_gi_bleeding', {})
                 if alt_info:
                     alternatives.append({
-                        "drug_name": new_med,
-                        "risk_level": "high" if total_risk >= 86 else "medium",
-                        "action": alt_info.get('alternative', 'Clopidogrel tercih edilebilir'),
-                        "alternative_drug": "Clopidogrel",
-                        "dosage_adjustment": "75mg günde 1 kez"
+                        "original_drug": new_med,
+                        "suggested_alternative": "Clopidogrel",
+                        "reason": "Gastro-intestinal kanama riski azalır"
                     })
+            elif 'WARFARIN' in new_med.upper():
+                alternatives.append({
+                    "original_drug": new_med,
+                    "suggested_alternative": "Apiksaban veya Rivaroksaban",
+                    "reason": "INR takibi gerektirmez, güvenlik profili daha iyi"
+                })
             
             # Generic fallback alternative
             if not alternatives:
                 alternatives.append({
-                    "drug_name": new_med,
-                    "risk_level": "high" if total_risk >= 86 else "medium",
-                    "action": f"{new_med} yerine daha güvenli bir alternatif değerlendirilmelidir",
-                    "alternative_drug": None,
-                    "dosage_adjustment": "Doktor önerisine göre"
+                    "original_drug": new_med,
+                    "suggested_alternative": "Doktor önerisi gereklidir",
+                    "reason": f"{new_med} için daha güvenli alternatif değerlendirilmelidir"
                 })
         
         return alternatives[:3]  # Max 3 alternatif
@@ -266,33 +305,36 @@ class DrugInteractionAnalyzer:
         current_meds: List[str],
         new_meds: List[str]
     ) -> List[Dict]:
-        """İzlem önerileri oluştur"""
+        """İzlem önerileri oluştur - YENİ FORMAT"""
         monitoring = []
+        all_meds = current_meds + new_meds
         
-        # RISK_SCORING_GUIDE'dan monitoring senaryoları
-        monitoring_scenarios = self.risk_guide.get('monitoring_recommendations', {}).get('common_monitoring_scenarios', {})
+        # Antikoagülan kontrol için INR takibi
+        anticoagulants = ['WARFARIN', 'COUMADIN']
+        if any(ac in ' '.join(all_meds).upper() for ac in anticoagulants):
+            monitoring.append({
+                "test": "INR (International Normalized Ratio)",
+                "frequency": "İlk 2 hafta günlük, sonra haftada 1-2 kez",
+                "reason": "Antikoagül an dozunu ayarlamak ve kanama riskini önlemek için"
+            })
         
-        # Warfarin kombinasyonları
-        if any('WARFARIN' in med.upper() for med in current_meds):
-            scenario = monitoring_scenarios.get('warfarin_combinations', {})
-            if scenario:
-                monitoring.append({
-                    "test_name": scenario.get('monitoring', 'INR'),
-                    "frequency": scenario.get('frequency', 'Haftalık'),
-                    "reason": "Warfarin etkileşimi - kanama riski artışı",
-                    "related_drugs": [m for m in current_meds if 'WARFARIN' in m.upper()]
-                })
+        # Böbrek fonksiyonu takibi
+        nephrotoxic = ['METFORMIN', 'NSAID', 'ACE INHIBITOR']
+        if any(med in ' '.join(all_meds).upper() for med in nephrotoxic):
+            monitoring.append({
+                "test": "Kreatinin ve eGFR",
+                "frequency": "3 ayda bir",
+                "reason": "Böbrek fonksiyonunu takip etmek için"
+            })
         
-        # Statin kombinasyonları
-        if any('STATIN' in med.upper() or 'ATORVASTATIN' in med.upper() or 'SIMVASTATIN' in med.upper() for med in current_meds + new_meds):
-            scenario = monitoring_scenarios.get('statin_interactions', {})
-            if scenario:
-                monitoring.append({
-                    "test_name": scenario.get('monitoring', 'CK, AST/ALT'),
-                    "frequency": scenario.get('frequency', 'Başlangıçta ve kas ağrısı varsa'),
-                    "reason": "Statin kullanımı - rabdomiyoliz riski",
-                    "related_drugs": [m for m in current_meds + new_meds if 'STATIN' in m.upper()]
-                })
+        # Karaciğer fonksiyonu
+        hepatotoxic = ['STATIN', 'PARACETAMOL']
+        if any(med in ' '.join(all_meds).upper() for med in hepatotoxic):
+            monitoring.append({
+                "test": "Karaciğer Fonksiyon Testleri (ALT, AST)",
+                "frequency": "6 ayda bir",
+                "reason": "Karaciğer hasarını erken tespit etmek için"
+            })
         
         return monitoring
     
