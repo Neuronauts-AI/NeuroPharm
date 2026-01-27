@@ -1,5 +1,5 @@
 services:
-  # Python Backend - Drug Interaction Analysis API
+  # Python Backend - OpenAI Agent + OpenFDA (Port 8080)
   backend:
     build:
       context: .
@@ -8,17 +8,17 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY}
     volumes:
-      # RAG verilerini host'tan mount et (4.6GB)
-      - ./rag:/app/rag:ro
+      - ./backend_logs:/app/backend_logs
+    command: ["python", "openai_agent.py", "server", "--log"]
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "-X", "POST", "http://localhost:8080/analyze", "-H", "Content-Type: application/json", "-d", "{\"age\":30,\"gender\":\"male\",\"conditions\":[],\"currentMedications\":[],\"newMedications\":[]}"]
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 30s
-      timeout: 15s
+      timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 10s
     networks:
       - drug-network
 

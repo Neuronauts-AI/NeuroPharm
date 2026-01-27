@@ -26,14 +26,27 @@ def load_env():
 load_env()
 
 # API Keys ve URLs
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPEN_ROUTER_API_KEY = os.getenv("OPEN_ROUTER_API_KEY")
 OPENFDA_BASE_URL = "https://api.fda.gov/drug/label.json"
 
-# OpenAI client
-openai_client = OpenAI(api_key=OPENAI_API_KEY)
+# OpenRouter client (OpenAI compatible)
+openai_client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPEN_ROUTER_API_KEY,
+)
 
 
 # ==================== OPENFDA TOOLS ====================
+
+def limit_text_length(text: Any, max_len: int = 1500) -> Any:
+    """Metin uzunluğunu sınırlar (Token tasarrufu için)"""
+    if isinstance(text, str):
+        if len(text) > max_len:
+            return text[:max_len] + "... (kısaltıldı)"
+        return text
+    elif isinstance(text, list):
+        return [limit_text_length(item, max_len) for item in text]
+    return text
 
 def search_openfda_by_drug(drug_name: str) -> Dict[str, Any]:
     """
@@ -76,15 +89,16 @@ def search_openfda_by_drug(drug_name: str) -> Dict[str, Any]:
                         "search_name": search_name,
                         "generic_names": result.get("openfda", {}).get("generic_name", []),
                         "brand_names": result.get("openfda", {}).get("brand_name", []),
-                        "drug_interactions": result.get("drug_interactions", []),
-                        "contraindications": result.get("contraindications", []),
-                        "boxed_warning": result.get("boxed_warning", []),
-                        "warnings_and_precautions": result.get("warnings_and_precautions", []),
-                        "dosage_and_administration": result.get("dosage_and_administration", []),
-                        "geriatric_use": result.get("geriatric_use", []),
-                        "pregnancy": result.get("pregnancy", []),
-                        "nursing_mothers": result.get("nursing_mothers", []),
-                        "adverse_reactions": result.get("adverse_reactions", [])
+                        "drug_interactions": limit_text_length(result.get("drug_interactions", [])),
+                        "contraindications": limit_text_length(result.get("contraindications", [])),
+                        "boxed_warning": limit_text_length(result.get("boxed_warning", [])),
+                        "warnings_and_precautions": limit_text_length(result.get("warnings_and_precautions", [])),
+                        "dosage_and_administration": limit_text_length(result.get("dosage_and_administration", [])),
+                        "geriatric_use": limit_text_length(result.get("geriatric_use", [])),
+                        "pregnancy": limit_text_length(result.get("pregnancy", [])),
+                        "nursing_mothers": limit_text_length(result.get("nursing_mothers", [])),
+                        "adverse_reactions": limit_text_length(result.get("adverse_reactions", [])),
+                        "laboratory_tests": limit_text_length(result.get("laboratory_tests", []))
                     }
                     
                     return {"found": True, "data": filtered_result}
@@ -143,63 +157,69 @@ def analyze_drug_interactions_openfda(
 
 # ==================== OPENAI AGENT EVALUATOR ====================
 
-OPENAI_SYSTEM_PROMPT = """You are an expert clinical pharmacist specializing in drug interaction analysis.
+OPENAI_SYSTEM_PROMPT = """You are a clinical pharmacist expert system. Your task is to analyze drug interactions and return ONLY a valid JSON object.
 
-Your role is to:
-1. Review drug interaction data from OpenFDA API
-2. Provide comprehensive clinical evaluation
-3. Return results in the EXACT JSON format specified
+CRITICAL: Return ONLY the JSON object. Do not include any explanatory text, comments, or markdown formatting before or after the JSON.
 
-Analysis criteria:
-- Drug-drug interactions (check all medication combinations)
-- Contraindications and boxed warnings
-- Patient-specific factors (age, gender, conditions)
-- Special populations (elderly, pregnancy, nursing)
-- Dosage concerns and monitoring requirements
+ANALYSIS PRINCIPLES AND SEVERITY SCORING (1-10):
+1. CRITICAL (10 points):
+   - Boxed Warning present
+   - Life-threatening contraindications
+   - "Do not use", "Fatal", "Life-threatening" interactions
 
-CRITICAL: You must return ONLY valid JSON in this exact format:
+2. HIGH (7-9 points):
+   - Serious drug interactions (combination should be avoided)
+   - Serious warnings related to patient age or conditions
 
+3. MEDIUM (4-6 points):
+   - Requires monitoring
+   - "Use with caution", "Adjust dose" warnings
+   - Laboratory tests required
+
+4. LOW (1-3 points) -> FILTER OUT (do not report)
+   - Common side effects (headache, nausea, etc.)
+   - General storage conditions
+   - Routine, well-known, minor warnings
+
+OUTPUT FORMAT - Return this exact JSON structure in Turkish:
 {
   "risk_score": 1-10,
   "results_found": true/false,
-  "clinical_summary": "Detailed clinical summary in Turkish",
-  
+  "clinical_summary": "Brief clinical summary in Turkish (max 3 sentences). Only critical findings.",
   "interaction_details": [
     {
       "drugs": ["Drug1", "Drug2"],
-      "severity": "High/Medium/Low",
-      "mechanism": "Description of interaction mechanism in Turkish"
+      "severity": "High/Medium",
+      "mechanism": "Interaction mechanism in Turkish (brief)"
     }
   ],
-  
   "alternatives": [
     {
-      "original_drug": "Drug name",
-      "suggested_alternative": "Alternative drug",
-      "reason": "Why this alternative is better"
+      "original_drug": "Drug Name",
+      "suggested_alternative": "Alternative Drug",
+      "reason": "Why safer? (in Turkish)"
     }
   ],
-  
   "monitoring_plan": [
     {
-      "test": "Test name (e.g., INR, Kreatinin, ALT/AST)",
-      "frequency": "How often (e.g., haftalık, aylık)",
-      "reason": "Why needed"
+      "test": "Test name (e.g., INR) in Turkish",
+      "frequency": "Frequency in Turkish",
+      "reason": "Reason in Turkish"
     }
   ],
-  
-  "dosage_warnings": ["Warning 1", "Warning 2"],
-  "special_population_alerts": ["Alert 1", "Alert 2"],
-  "patient_safety_notes": "Important safety notes"
+  "dosage_warnings": ["Important dosage warnings in Turkish"],
+  "special_population_alerts": ["Pregnancy, elderly warnings in Turkish"],
+  "patient_safety_notes": "Most critical single-sentence warning for patient in Turkish"
 }
 
-Instructions:
-- Use Turkish for all text descriptions
-- Be clinically accurate and specific
-- Highlight critical risks prominently
-- If no data found, set results_found to false
-- Analyze ALL medication combinations for interactions
-- Consider patient age and conditions in your analysis
+CRITICAL RULES:
+- Output language: TURKISH for all text fields
+- Return ONLY the JSON object, nothing else
+- No markdown code blocks
+- No explanatory text before or after JSON
+- Be MINIMALIST - don't overwhelm the doctor
+- If only LOW risks exist, set results_found: false
+- If Boxed Warning exists, risk_score must be 10
 """
 
 
@@ -229,17 +249,48 @@ Focus on:
     
     try:
         response = openai_client.chat.completions.create(
-            model="gpt-4o",
+            model="anthropic/claude-sonnet-4.5", # User requested "sonnet 4.5" (mapped to latest best Sonnet)
             messages=[
                 {"role": "system", "content": OPENAI_SYSTEM_PROMPT},
                 {"role": "user", "content": user_message}
             ],
-            temperature=0.3,
+            temperature=0.1,
             response_format={"type": "json_object"}
         )
         
-        result = json.loads(response.choices[0].message.content)
-        return result
+        content = response.choices[0].message.content
+        print(f"🤖 Raw AI Response: {content[:100]}...")
+        
+        # Markdown temizliği (```json ... ```)
+        if "```" in content:
+            content = content.replace("```json", "").replace("```", "").strip()
+        
+        # JSON objesini bul ve çıkar (ekstra metin varsa onu atla)
+        try:
+            # İlk { ve son } arasındaki içeriği al
+            start_idx = content.find('{')
+            if start_idx == -1:
+                raise ValueError("No JSON object found in response")
+            
+            # Balanced braces ile JSON objesinin sonunu bul
+            brace_count = 0
+            end_idx = start_idx
+            for i in range(start_idx, len(content)):
+                if content[i] == '{':
+                    brace_count += 1
+                elif content[i] == '}':
+                    brace_count -= 1
+                    if brace_count == 0:
+                        end_idx = i + 1
+                        break
+            
+            json_str = content[start_idx:end_idx]
+            result = json.loads(json_str)
+            return result
+        except (ValueError, json.JSONDecodeError) as parse_error:
+            # Fallback: try parsing the whole content
+            result = json.loads(content)
+            return result
     
     except Exception as e:
         print(f"OpenAI evaluation error: {e}")
@@ -453,13 +504,13 @@ def create_openai_agent_app(enable_logging: bool = False):
             
             return {
                 "status": "healthy" if openfda_status == "healthy" else "degraded",
-                "openai_configured": OPENAI_API_KEY is not None and not OPENAI_API_KEY.startswith("<"),
+                "openai_configured": OPEN_ROUTER_API_KEY is not None and not OPEN_ROUTER_API_KEY.startswith("<"),
                 "openfda_status": openfda_status,
                 "data_source": "OpenFDA API",
                 "logging_enabled": backend_logger.enabled
             }
         
-        @app.post("/analyze-openai")
+        @app.post("/analyze")
         async def analyze_openai(request: AnalysisRequest, req: Request):
             """OpenAI Agent + OpenFDA API endpoint"""
             start_time = time.time()
@@ -497,7 +548,7 @@ def create_openai_agent_app(enable_logging: bool = False):
                     user_agent = req.headers.get("user-agent", "unknown")
                     
                     backend_logger.log_request(
-                        endpoint="/analyze-openai",
+                        endpoint="/analyze",  # Updated endpoint name
                         method="POST",
                         client_ip=client_ip,
                         user_agent=user_agent,
@@ -515,7 +566,7 @@ def create_openai_agent_app(enable_logging: bool = False):
                 if backend_logger.enabled:
                     client_ip = req.client.host if req.client else "unknown"
                     backend_logger.log_error(
-                        endpoint="/analyze-openai",
+                        endpoint="/analyze",  # Updated endpoint name
                         method="POST",
                         client_ip=client_ip,
                         error_message=str(e),
@@ -556,7 +607,7 @@ if __name__ == "__main__":
         if app:
             import uvicorn
             print("\n🚀 Starting OpenAI Agent + OpenFDA API (Direct Mode)...")
-            print("📍 Endpoint: http://localhost:8081/analyze-openai")
+            print("📍 Endpoint: http://localhost:8080/analyze")
             print("🌐 Data source: OpenFDA API (real-time)")
             print("🤖 Evaluator: OpenAI GPT-4")
             if enable_logging:
@@ -564,7 +615,7 @@ if __name__ == "__main__":
             else:
                 print("📝 Logging: DISABLED (use --log to enable)")
             print()
-            uvicorn.run(app, host="0.0.0.0", port=8081)
+            uvicorn.run(app, host="0.0.0.0", port=8080)
     else:
         # Test
         print("🧪 Testing OpenAI Agent + Ollama + OpenFDA\n")
