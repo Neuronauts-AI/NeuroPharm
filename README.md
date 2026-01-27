@@ -1,218 +1,59 @@
-# Doktor Reçete Paneli
+# Neuropharm: İlaç Etkileşim Analiz Sistemi
 
-Doktorların hastalara ilaç yazarken kullanabilecekleri modern bir web uygulaması. İlaç etkileşimlerini analiz eder ve alternatif öneriler sunar.
+Neuropharm, OpenFDA veritabanını ve yapay zeka destekli klinik analiz motorunu kullanarak, hasta odaklı ilaç etkileşim analizleri sunan modern bir sağlık teknolojisi çözümüdür.
 
-## Özellikler
+## 🌟 Temel Özellikler
 
-- **Hasta Yönetimi**: Hasta ekleme, düzenleme ve listeleme
-- **Hasta Detayları**: Yaş, cinsiyet, hastalıklar ve mevcut ilaçlar
-- **İlaç Arama**: Kapsamlı ilaç veritabanından arama yapma
-- **Etkileşim Analizi**: Webhook ile ilaç etkileşimlerini analiz etme
-- **Risk Değerlendirmesi**: Risk skoru ve alternatif ilaç önerileri
-- **Reçete Yönetimi**: Reçete oluşturma ve kaydetme
+### 1. Güvenilir Veri Kaynağı (OpenFDA)
+- Doğrudan **FDA (Amerikan Gıda ve İlaç Dairesi)** veritabanı entegrasyonu.
+- Statik veritabanı yerine her sorguda güncel veri.
+- Kara kutu uyarıları, kontrendikasyonlar ve klinik veriler.
 
-## Teknolojiler
+### 2. Hasta Odaklı Analiz (Anamnez)
+- Sadece ilaç-ilaç etkileşimi değil, **hasta-ilaç** uyumu kontrolü.
+- **Hastalık Çapraz Sorgusu:** Mevcut hastalıklar ile ilaç kontrendikasyonlarının eşleştirilmesi.
+- **Özel Popülasyon Analizi:** Geriatrik (65+), Pediatrik ve Hamilelik durumlarına özel risk taraması.
 
-- **Next.js 15** - React framework
-- **TypeScript** - Tip güvenliği
-- **Tailwind CSS** - Modern styling
-- **API Routes** - Backend entegrasyonu
-- **Docker** - Containerization ve kolay deployment
+### 3. Akıllı Klinik Motor
+- **Yapılandırılmış Veri İşleme:** İlaç isimlerini standardize eder (örn. *Parol* -> *Acetaminophen*).
+- **Ciddiyet Filtrelemesi:** Doktora sadece kritik (Critical) ve önemli (High) uyarıları sunar; bilgi kirliliğini önler.
+- **AI Destekli Yorumlama:** Bulguları klinik bir eczacı yaklaşımıyla özetler ve aksiyon önerileri sunar.
 
-## Kurulum
+## 🚀 Kurulum ve Çalıştırma
 
-1. Bağımlılıkları yükleyin:
+Proje Docker ile kolayca ayağa kaldırılabilir.
+
+### Gereksinimler
+- Docker & Docker Compose
+
+### Hızlı Başlangıç
+
+1. Projeyi klonlayın:
 ```bash
-npm install
+git clone https://github.com/egeaydin1/druginteraction.git
+cd druginteraction
 ```
 
-2. Environment değişkenlerini ayarlayın:
+2. Konfigürasyonu ayarlayın:
 ```bash
 cp .env.example .env
+# .env dosyasını gerekli API anahtarları ile güncelleyin
 ```
 
-3. `.env` dosyasını düzenleyin ve webhook URL'inizi ekleyin:
-```
-DRUG_ANALYSIS_WEBHOOK_URL=https://your-webhook-url.com/analyze
-```
-
-**Not:** Eğer webhook URL'i tanımlanmazsa, sistem demo yanıtlar kullanacaktır.
-
-4. Geliştirme sunucusunu başlatın:
+3. Uygulamayı başlatın:
 ```bash
-npm run dev
+docker-compose up -d --build
 ```
 
-5. Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
+Uygulama **http://localhost:3000** adresinde çalışacaktır.
 
-## Docker ile Kurulum
+## 🏗 Mimari
 
-Docker kullanarak uygulamayı çalıştırmak için:
+Sistem 3 temel katmandan oluşur:
+1.  **Veri Katmanı:** OpenFDA API (Gerçek zamanlı veri).
+2.  **Analiz Motoru:** Rule-based ön eleme + AI Klinik Değerlendirme.
+3.  **Sunum Katmanı:** Kullanıcı dostu web arayüzü ve API.
 
-### Docker Compose ile (Önerilen)
+## 📄 Lisans
 
-1. Webhook URL'inizi ayarlamak için `docker-compose.yaml` dosyasını düzenleyin (opsiyonel):
-```yaml
-environment:
-  - DRUG_ANALYSIS_WEBHOOK_URL=https://your-webhook-url.com/analyze
-```
-
-2. Docker container'ı başlatın:
-```bash
-docker-compose up -d
-```
-
-3. Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
-
-4. Container'ı durdurmak için:
-```bash
-docker-compose down
-```
-
-### Dockerfile ile Manuel Kurulum
-
-1. Docker image'ı build edin:
-```bash
-docker build -t doctor-prescription-panel .
-```
-
-2. Container'ı çalıştırın:
-```bash
-docker run -p 3000:3000 \
-  -e DRUG_ANALYSIS_WEBHOOK_URL=https://your-webhook-url.com/analyze \
-  doctor-prescription-panel
-```
-
-3. Tarayıcınızda [http://localhost:3000](http://localhost:3000) adresini açın.
-
-### Docker Logları
-
-Container loglarını görmek için:
-```bash
-docker-compose logs -f
-```
-
-veya
-
-```bash
-docker logs -f doctor-prescription-panel
-```
-
-## Webhook Entegrasyonu
-
-Uygulamanın ilaç analizi için bir webhook endpoint'e ihtiyacı vardır.
-
-### n8n ile Webhook Kurulumu (Önerilen)
-
-n8n, workflow automation aracıdır ve webhook oluşturmak için idealdir. Detaylı kurulum için [N8N_SETUP.md](./N8N_SETUP.md) dosyasına bakın.
-
-**Hızlı Başlangıç:**
-
-1. n8n'i Docker ile başlatın:
-```bash
-docker run -d --name n8n -p 5678:5678 -v ~/.n8n:/home/node/.n8n docker.n8n.io/n8nio/n8n
-```
-
-2. Hazır workflow'u import edin:
-   - http://localhost:5678 adresini açın
-   - `n8n-workflow.json` dosyasını import edin
-   - Workflow'u aktif edin
-
-3. Webhook URL'ini `.env` dosyasına ekleyin:
-```bash
-DRUG_ANALYSIS_WEBHOOK_URL=http://localhost:5678/webhook/drug-analysis
-```
-
-4. Uygulamayı başlatın ve test edin!
-
-### Manuel Webhook Oluşturma
-
-Kendi webhook endpoint'inizi oluşturmak isterseniz:
-
-### İstek Formatı
-
-```typescript
-POST /your-webhook-endpoint
-Content-Type: application/json
-
-{
-  "patientId": "string",
-  "currentMedications": [
-    {
-      "id": "string",
-      "name": "string",
-      "dosage": "string",
-      "frequency": "string"
-    }
-  ],
-  "newMedications": [
-    {
-      "id": "string",
-      "name": "string",
-      "dosage": "string",
-      "frequency": "string"
-    }
-  ],
-  "conditions": ["string"]
-}
-```
-
-### Yanıt Formatı
-
-```typescript
-{
-  "risk_score": number,           // 1-10 arası risk skoru
-  "alternative_suggestion": string,  // Alternatif ilaç önerisi
-  "description": string,          // Detaylı açıklama
-  "has_alternative": boolean,     // Alternatif öneri var mı?
-  "results_found": boolean        // Etkileşim verisi bulundu mu?
-}
-```
-
-## Kullanım
-
-1. **Hasta Seçimi/Ekleme**: Sol taraftaki listeden bir hasta seçin veya "Yeni Hasta Ekle" butonuna tıklayın
-2. **Hasta Bilgilerini Görüntüleme**: Seçilen hastanın detaylı bilgilerini sağ panelde görün
-3. **İlaç Ekleme**: "İlaç Ara ve Ekle" alanından ilaç arayıp seçin
-4. **Analiz**: "İlaç Etkileşimini Analiz Et" butonuna tıklayın
-5. **Sonuçları İnceleyin**: Risk skoru, alternatifler ve açıklamaları görün
-6. **Kaydet**: Reçeteyi onayladıktan sonra "Reçeteyi Hastaya Kaydet" butonuna tıklayın
-
-## Proje Yapısı
-
-```
-druginteraction/
-├── app/
-│   ├── api/
-│   │   └── analyze/
-│   │       └── route.ts       # Webhook API endpoint
-│   ├── page.tsx               # Ana sayfa
-│   └── layout.tsx
-├── components/
-│   ├── PatientList.tsx        # Hasta listesi sidebar
-│   ├── PatientForm.tsx        # Hasta ekleme/düzenleme formu
-│   ├── PatientDetails.tsx     # Hasta detayları
-│   ├── MedicineSearch.tsx     # İlaç arama ve seçim
-│   └── AnalysisResult.tsx     # Analiz sonuçları
-├── types/
-│   └── index.ts               # TypeScript tipleri
-├── lib/
-│   └── mockData.ts            # Örnek veriler
-├── Dockerfile                 # Docker image tanımı
-├── docker-compose.yaml        # Docker Compose konfigürasyonu
-├── .dockerignore              # Docker build exclusions
-└── README.md
-```
-
-## Geliştirme
-
-Projeyi geliştirmek için:
-
-1. Yeni bir branch oluşturun
-2. Değişikliklerinizi yapın
-3. Commit edin ve push edin
-4. Pull request oluşturun
-
-## Lisans
-
-MIT
+Bu proje **Apache License 2.0** ile lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakınız.
