@@ -11,6 +11,7 @@ import httpx
 from typing import Optional, List, Dict, Any
 from pathlib import Path
 from openai import OpenAI
+from pydantic import BaseModel
 
 # .env dosyasını oku
 def load_env():
@@ -161,65 +162,52 @@ OPENAI_SYSTEM_PROMPT = """You are a clinical pharmacist expert system. Your task
 
 CRITICAL: Return ONLY the JSON object. Do not include any explanatory text, comments, or markdown formatting before or after the JSON.
 
-ANALYSIS PRINCIPLES AND SEVERITY SCORING (1-10):
-1. CRITICAL (10 points):
-   - Boxed Warning present
-   - Life-threatening contraindications
-   - "Do not use", "Fatal", "Life-threatening" interactions
-
-2. HIGH (7-9 points):
-   - Serious drug interactions (combination should be avoided)
-   - Serious warnings related to patient age or conditions
-
-3. MEDIUM (4-6 points):
-   - Requires monitoring
-   - "Use with caution", "Adjust dose" warnings
-   - Laboratory tests required
-
-4. LOW (1-3 points) -> FILTER OUT (do not report)
-   - Common side effects (headache, nausea, etc.)
-   - General storage conditions
-   - Routine, well-known, minor warnings
+ANALYSIS PRINCIPLES:
+1. STRICTLY COMPARTMENTALIZE INFO - DO NOT REPEAT CONTENT.
+2. Clinical Summary: HIGH-LEVEL overview ONLY. No specific dosage numbers or granular side effect lists here.
+3. Dosage Warnings: The ONLY place for dosage adjustments and specific dosage limits.
+4. Patient Safety: The ONLY place for side effects and red flags.
 
 OUTPUT FORMAT - Return this exact JSON structure in Turkish:
 {
   "risk_score": 1-10,
   "results_found": true/false,
-  "clinical_summary": "Brief clinical summary in Turkish (max 3 sentences). Only critical findings.",
+  "clinical_summary": "1-2 sentence high-level summary of the INTERACTION mechanism and main clinical concern. DO NOT include dosage numbers here. DO NOT list all side effects here.",
   "interaction_details": [
     {
       "drugs": ["Drug1", "Drug2"],
       "severity": "High/Medium",
-      "mechanism": "Interaction mechanism in Turkish (brief)"
+      "mechanism": "Brief mechanism of interaction"
     }
   ],
   "alternatives": [
     {
-      "original_drug": "Drug Name",
-      "suggested_alternative": "Alternative Drug",
-      "reason": "Why safer? (in Turkish)"
+      "original_drug": "EXACT DRUG NAME ONLY (e.g. 'Parol'). Do NOT include dosage, comments or parenthesis.",
+      "suggested_alternative": "SINGLE DRUG NAME ONLY (e.g. 'Ibuprofen'). If you have multiple suggestions, create SEPARATE objects for each.",
+      "reason": "Why safer?"
     }
   ],
   "monitoring_plan": [
     {
-      "test": "Test name (e.g., INR) in Turkish",
-      "frequency": "Frequency in Turkish",
-      "reason": "Reason in Turkish"
+      "test": "Test name",
+      "frequency": "Frequency",
+      "reason": "Reason"
     }
   ],
-  "dosage_warnings": ["Important dosage warnings in Turkish"],
-  "special_population_alerts": ["Pregnancy, elderly warnings in Turkish"],
-  "patient_safety_notes": "Most critical single-sentence warning for patient in Turkish"
+  "dosage_warnings": ["ALL dosage related warnings, adjustments, and maximum dose limits GO HERE. Do not put them in clinical summary."],
+  "special_population_alerts": ["Pregnancy, elderly warnings"],
+  "patient_safety_notes": {
+    "normal_side_effects": "Common manageble side effects",
+    "red_flags": "Serious symptoms requiring immediate medical attention"
+  }
 }
 
 CRITICAL RULES:
 - Output language: TURKISH for all text fields
-- Return ONLY the JSON object, nothing else
-- No markdown code blocks
-- No explanatory text before or after JSON
-- Be MINIMALIST - don't overwhelm the doctor
-- If only LOW risks exist, set results_found: false
+- Return ONLY the JSON object
+- NO MARKDOWN PREAMBLE OR POSTSCRIPT
 - If Boxed Warning exists, risk_score must be 10
+- SEPARATE ALTERNATIVES into individual objects. Do not say "X or Y".
 """
 
 
@@ -397,6 +385,79 @@ def analyze_with_openai_agent(
         return evaluation
 
 
+# ==================== CHAT FUNCTIONALITY ====================
+
+class ChatRequest(BaseModel):
+    message: str
+    context: Dict[str, Any]  # Analysis result
+    patient_info: Dict[str, Any]  # Patient details
+    history: List[Dict[str, str]]  # Chat history
+
+def chat_with_analysis(
+    message: str,
+    context: Dict[str, Any],
+    patient_info: Dict[str, Any],
+    history: List[Dict[str, str]]
+) -> str:
+    """
+    Analiz sonuçları üzerinden sohbet et
+    """
+    try:
+        # Sistem promptu - Kısa ve öz cevaplar için
+        system_prompt = """Sen uzman bir klinik eczacısın. Görevin doktorun sorularına KISA, ÖZ ve NET cevaplar vermek.
+        
+        KURALLAR:
+        1. Cevapların çok kısa olmalı (maksimum 2-3 cümle).
+        2. Sadece sorulan soruya odaklan, gereksiz bilgi verme.
+        3. Markdown formatı kullanabilirsin (bold, list vb.).
+        4. Eğer sorunun cevabı analiz sonucunda yoksa, genel tıbbi bilgini kullan ama bunu belirt.
+        5. Her zaman TÜRKÇE cevap ver.
+        6. Üslubun profesyonel ama direkt olsun. "Merhaba", "Tabii ki" gibi giriş kelimelerini kullanma.
+        """
+
+        # Context hazırlığı
+        context_str = json.dumps(context, indent=2, ensure_ascii=False)
+        patient_str = json.dumps(patient_info, indent=2, ensure_ascii=False)
+        
+        # Mesaj geçmişini formatla
+        messages = [{"role": "system", "content": system_prompt}]
+        
+        # Analiz bağlamını ilk mesaj olarak ekle
+        messages.append({
+            "role": "user", 
+            "content": f"""BAĞLAM BİLGİLERİ:
+            
+            HASTA BİLGİSİ:
+            {patient_str}
+            
+            MEVCUT ANALİZ SONUCU:
+            {context_str}
+            
+            Bu bağlamı kullanarak soruları cevapla."""
+        })
+        
+        # Sohbet geçmişini ekle
+        for msg in history:
+            messages.append({"role": msg["role"], "content": msg["content"]})
+            
+        # Son kullanıcı mesajını ekle
+        messages.append({"role": "user", "content": message})
+
+        # OpenAI/Claude çağrısı
+        response = openai_client.chat.completions.create(
+            model="anthropic/claude-sonnet-4.5", 
+            messages=messages,
+            temperature=0.3,
+            max_tokens=300
+        )
+        
+        return response.choices[0].message.content
+
+    except Exception as e:
+        print(f"Chat error: {e}")
+        return "Üzgünüm, şu anda cevap veremiyorum."
+
+
 # ==================== FASTAPI INTEGRATION ====================
 
 def create_openai_agent_app(enable_logging: bool = False):
@@ -453,7 +514,7 @@ def create_openai_agent_app(enable_logging: bool = False):
             user_agent = request.headers.get("user-agent", "unknown")
             
             # Basit endpoint'leri logla (detaylı loglama analyze fonksiyonunda yapılıyor)
-            if backend_logger.enabled and not request.url.path.startswith("/analyze"):
+            if backend_logger.enabled and not request.url.path.startswith("/analyze") and not request.url.path.startswith("/chat"):
                 backend_logger.log_request(
                     endpoint=request.url.path,
                     method=request.method,
@@ -479,6 +540,8 @@ def create_openai_agent_app(enable_logging: bool = False):
             conditions: List[str]
             currentMedications: List[MedicationItem]
             newMedications: List[MedicationItem]
+            
+        # ChatRequest yukarıda tanımlandı
         
         @app.get("/")
         async def root():
@@ -586,12 +649,55 @@ def create_openai_agent_app(enable_logging: bool = False):
                     "special_population_alerts": None,
                     "patient_safety_notes": None
                 }
+
+        @app.post("/chat")
+        async def chat_endpoint(request: ChatRequest, req: Request):
+            """Chat endpoint for follow-up questions"""
+            start_time = time.time()
+            
+            try:
+                response_text = chat_with_analysis(
+                    message=request.message,
+                    context=request.context,
+                    patient_info=request.patient_info,
+                    history=request.history
+                )
+                
+                result = {"reply": response_text}
+                
+                # Loglama
+                if backend_logger.enabled:
+                    processing_time_ms = (time.time() - start_time) * 1000
+                    client_ip = req.client.host if req.client else "unknown"
+                    user_agent = req.headers.get("user-agent", "unknown")
+                    
+                    # Chat request data'sını kısaltarak logla (context çok büyük olabilir)
+                    log_data = request.model_dump()
+                    log_data["context"] = "..." # Context'i loglama
+                    
+                    backend_logger.log_request(
+                        endpoint="/chat",
+                        method="POST",
+                        client_ip=client_ip,
+                        user_agent=user_agent,
+                        request_data=log_data,
+                        response_data=result,
+                        status_code=200,
+                        processing_time_ms=processing_time_ms
+                    )
+                
+                return result
+
+            except Exception as e:
+                print(f"Chat endpoint error: {e}")
+                return {"reply": "Hata oluştu, lütfen tekrar deneyin."}
         
         return app
     
     except ImportError as e:
         print(f"FastAPI not available: {e}")
         return None
+
 
 
 # ==================== TEST ====================

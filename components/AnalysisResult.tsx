@@ -1,12 +1,14 @@
-'use client';
 
-import { AnalysisResponse, Medicine } from '@/types';
+import { AnalysisResponse, Medicine, Patient } from '@/types';
 import { useEffect, useState, ReactNode } from 'react';
+import AnalysisChat from './AnalysisChat';
 
 interface AnalysisResultProps {
   result: AnalysisResponse | null;
   loading: boolean;
   onReplaceWithAlternative?: (originalDrugName: string, alternativeDrug: Medicine) => void;
+  patient: Patient | null;
+  selectedMedicines: Medicine[];
 }
 
 interface AccordionItemProps {
@@ -48,7 +50,7 @@ function AccordionItem({ title, icon, children, defaultOpen = false }: Accordion
   );
 }
 
-export default function AnalysisResult({ result, loading, onReplaceWithAlternative }: AnalysisResultProps) {
+export default function AnalysisResult({ result, loading, onReplaceWithAlternative, patient, selectedMedicines }: AnalysisResultProps) {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
@@ -183,9 +185,9 @@ export default function AnalysisResult({ result, loading, onReplaceWithAlternati
           {result.interaction_details && result.interaction_details.length > 0 && (
             <AccordionItem title="Tespit Edilen Etkileşimler" icon="⚠️">
               <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${result.interaction_details.length === 1 ? 'lg:grid-cols-1' :
-                  result.interaction_details.length === 2 ? 'lg:grid-cols-2' :
-                    result.interaction_details.length === 3 ? 'lg:grid-cols-3' :
-                      'lg:grid-cols-4'
+                result.interaction_details.length === 2 ? 'lg:grid-cols-2' :
+                  result.interaction_details.length === 3 ? 'lg:grid-cols-3' :
+                    'lg:grid-cols-4'
                 }`}>
                 {result.interaction_details.map((interaction, index) => (
                   <div
@@ -402,6 +404,16 @@ export default function AnalysisResult({ result, loading, onReplaceWithAlternati
           )}
         </div>
       </div>
+
+      {/* Analysis Chat Integration */}
+      <AccordionItem title="Analiz Asistanı" icon="💬">
+        <AnalysisChat
+          analysisResult={result}
+          patient={patient}
+          medicines={selectedMedicines}
+        />
+      </AccordionItem>
     </div>
   );
 }
+
