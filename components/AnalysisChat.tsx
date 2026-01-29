@@ -2,6 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { AnalysisResponse, Patient } from '@/types';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface AnalysisChatProps {
     analysisResult: AnalysisResponse;
@@ -144,16 +146,36 @@ export default function AnalysisChat({ analysisResult, patient, medicines }: Ana
                             className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
                             <div
-                                className={`max-w-[80%] px-5 py-3 rounded-2xl ${msg.role === 'user'
-                                        ? 'bg-blue-600 text-white rounded-br-none'
-                                        : 'bg-white/10 text-white/90 rounded-bl-none border border-white/5'
+                                className={`max-w-[85%] px-5 py-4 rounded-2xl ${msg.role === 'user'
+                                    ? 'bg-blue-600 text-white rounded-br-none'
+                                    : 'bg-white/10 text-white/90 rounded-bl-none border border-white/5 shadow-sm'
                                     }`}
                             >
-                                <p className="whitespace-pre-wrap leading-relaxed text-sm">{msg.content}</p>
+                                {msg.role === 'user' ? (
+                                    <p className="whitespace-pre-wrap leading-relaxed text-sm">{msg.content}</p>
+                                ) : (
+                                    <div className="text-sm leading-relaxed">
+                                        <ReactMarkdown
+                                            remarkPlugins={[remarkGfm]}
+                                            components={{
+                                                p: ({ node, ...props }) => <p className="mb-3 last:mb-0" {...props} />,
+                                                strong: ({ node, ...props }) => <strong className="font-bold text-blue-300" {...props} />,
+                                                ul: ({ node, ...props }) => <ul className="list-disc list-inside mb-3 space-y-1 pl-1" {...props} />,
+                                                ol: ({ node, ...props }) => <ol className="list-decimal list-inside mb-3 space-y-1 pl-1" {...props} />,
+                                                li: ({ node, ...props }) => <li className="marker:text-blue-400/70" {...props} />,
+                                                a: ({ node, ...props }) => <a className="text-blue-300 hover:text-blue-200 underline decoration-blue-300/30 underline-offset-2 transition-colors" target="_blank" rel="noopener noreferrer" {...props} />,
+                                                blockquote: ({ node, ...props }) => <blockquote className="border-l-4 border-blue-500/30 pl-4 py-1 my-3 bg-blue-500/5 italic rounded-r" {...props} />
+                                            }}
+                                        >
+                                            {msg.content}
+                                        </ReactMarkdown>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))
                 )}
+
                 {isLoading && (
                     <div className="flex justify-start">
                         <div className="bg-white/5 rounded-2xl px-5 py-4 rounded-bl-none border border-white/5 flex items-center gap-2">

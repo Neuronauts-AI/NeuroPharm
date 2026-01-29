@@ -70,6 +70,7 @@ export interface PatientSafetyNotes {
 export interface AnalysisResponse {
   risk_score: number;  // 1-10
   results_found: boolean;
+  last_updated?: string;
   clinical_summary: string;
 
   interaction_details?: InteractionDetail[];
@@ -78,4 +79,5 @@ export interface AnalysisResponse {
   dosage_warnings?: DosageWarning[];
   special_population_alerts?: SpecialPopulationAlert;
   patient_safety_notes?: PatientSafetyNotes;
+  extracted_patient_info?: any;
 }

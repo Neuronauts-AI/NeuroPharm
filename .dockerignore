@@ -1,53 +1,46 @@
-# Dependencies
-node_modules
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# Build outputs
-.next
-out
-build
-dist
-
-# Testing
-coverage
-.nyc_output
-
-# Environment files
-.env
-.env*.local
-
-# IDE and editor files
-.vscode
-.idea
-*.swp
-*.swo
-*~
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Git
+# Version Control
 .git
 .gitignore
 
-# Misc
-.eslintcache
+# Node.js
+node_modules
+npm-debug.log
+yarn-error.log
+.next
+out
+.turbo
+build
+dist
 
-# Python virtual environment (exclude from Docker build)
-venv/
-__pycache__/
+# Python
+__pycache__
 *.pyc
 *.pyo
 *.pyd
 .Python
+env/
+venv/
+.venv/
 pip-log.txt
-pip-delete-this-directory.txt
-.mypy_cache/
-.pytest_cache/
 
-# Note: RAG folder is NOT excluded - it's needed for backend
-# Note: Dockerfile files are NOT excluded - they need to be in context
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Logs & Data
+backend_logs/
+*.log
+
+# Docker
+Dockerfile
+Dockerfile.backend
+Dockerfile.backup
+docker-compose.yaml
+.dockerignore
+
+# IDEs
+.vscode
+.idea
+
+# Specific Large Folders (Verify if needed)
+# drugs/ 

@@ -9,6 +9,7 @@ interface PatientListProps {
   onSelectPatient: (patient: Patient) => void;
   onAddPatient: () => void;
   onEditPatient: (patient: Patient) => void;
+  onAnamnesisClick: () => void;
 }
 
 export default function PatientList({
@@ -17,6 +18,7 @@ export default function PatientList({
   onSelectPatient,
   onAddPatient,
   onEditPatient,
+  onAnamnesisClick,
 }: PatientListProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -35,12 +37,28 @@ export default function PatientList({
           onChange={(e) => setSearchTerm(e.target.value)}
           className="w-full px-3 py-2 border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--input-bg)] text-[var(--foreground)]"
         />
-        <button
-          onClick={onAddPatient}
-          className="w-full mt-3 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors"
-        >
-          + Yeni Hasta Ekle
-        </button>
+        <div className="flex gap-2 mt-3">
+          <button
+            onClick={onAddPatient}
+            className="flex-1 bg-blue-600 text-white px-3 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center gap-1 text-sm font-medium"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+            </svg>
+            Yeni Hasta
+          </button>
+
+          <button
+            onClick={onAnamnesisClick}
+            className="flex-1 bg-purple-600 text-white px-3 py-2 rounded-md hover:bg-purple-700 transition-colors flex items-center justify-center gap-1 text-sm font-medium"
+            title="Anemnez belgesi ile analiz"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Anemnez
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto">
@@ -48,11 +66,10 @@ export default function PatientList({
           <div
             key={patient.id}
             onClick={() => onSelectPatient(patient)}
-            className={`p-4 border-b border-[var(--card-border)] cursor-pointer transition-colors ${
-              selectedPatient?.id === patient.id
-                ? 'bg-blue-600/10 border-l-4 border-l-blue-600'
-                : 'hover:bg-[var(--hover-bg)]'
-            }`}
+            className={`p-4 border-b border-[var(--card-border)] cursor-pointer transition-colors ${selectedPatient?.id === patient.id
+              ? 'bg-blue-600/10 border-l-4 border-l-blue-600'
+              : 'hover:bg-[var(--hover-bg)]'
+              }`}
           >
             <div className="flex justify-between items-start">
               <div className="flex-1">

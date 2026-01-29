@@ -147,12 +147,19 @@ export default function AnalysisResult({ result, loading, onReplaceWithAlternati
             📊 Analiz Sonuçları
           </h3>
           {result.results_found && (
-            <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/50 rounded-full text-blue-400 text-sm font-medium flex items-center gap-2">
-              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
-              FDA Verisi Bulundu
-            </span>
+            <div className="flex flex-col md:flex-row items-end md:items-center gap-3">
+              {result.last_updated && (
+                <span className="text-white/50 text-xs md:text-sm">
+                  Son Güncelleme: <span className="text-blue-300 font-mono">{result.last_updated}</span>
+                </span>
+              )}
+              <span className="px-4 py-2 bg-blue-500/20 border border-blue-500/50 rounded-full text-blue-400 text-sm font-medium flex items-center gap-2 transition-transform hover:scale-105 cursor-help" title="Analiz sonuçları güncel FDA veritabanından alınmıştır">
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+                FDA Verisi Bulundu
+              </span>
+            </div>
           )}
         </div>
 

@@ -12,6 +12,16 @@ from typing import Optional, List, Dict, Any
 from pathlib import Path
 from openai import OpenAI
 from pydantic import BaseModel
+from fastapi import UploadFile, File, Form, HTTPException
+import io
+try:
+    import pypdf
+except ImportError:
+    pypdf = None
+try:
+    import docx
+except ImportError:
+    docx = None
 
 # .env dosyasını oku
 def load_env():
@@ -99,7 +109,9 @@ def search_openfda_by_drug(drug_name: str) -> Dict[str, Any]:
                         "pregnancy": limit_text_length(result.get("pregnancy", [])),
                         "nursing_mothers": limit_text_length(result.get("nursing_mothers", [])),
                         "adverse_reactions": limit_text_length(result.get("adverse_reactions", [])),
-                        "laboratory_tests": limit_text_length(result.get("laboratory_tests", []))
+
+                        "laboratory_tests": limit_text_length(result.get("laboratory_tests", [])),
+                        "effective_time": result.get("effective_time", "20240101") # Default fallback
                     }
                     
                     return {"found": True, "data": filtered_result}
@@ -368,6 +380,28 @@ def analyze_with_openai_agent(
     evaluation = evaluate_with_openai(openfda_data)
     
     step2_time = (time.time() - step2_start) * 1000
+
+    # Calculate latest update date from OpenFDA data
+    latest_date = "2024.01.01" # Default
+    try:
+        dates = []
+        if isinstance(openfda_data, dict) and "openfda_data" in openfda_data:
+             for item in openfda_data["openfda_data"]:
+                if item.get("found") and "data" in item and "effective_time" in item["data"]:
+                    d_raw = item["data"]["effective_time"]
+                    if isinstance(d_raw, str) and len(d_raw) >= 8:
+                        dates.append(d_raw[:8])
+        
+        if dates:
+            dates.sort(reverse=True)
+            ds = dates[0]
+            latest_date = f"{ds[6:8]}.{ds[4:6]}.{ds[0:4]}"
+    except Exception as e:
+        print(f"Date parsing error: {e}")
+
+    # Inject into result
+    if isinstance(evaluation, dict):
+        evaluation["last_updated"] = latest_date
     
     if track_pipeline:
         pipeline_steps.append({
@@ -456,6 +490,74 @@ def chat_with_analysis(
     except Exception as e:
         print(f"Chat error: {e}")
         return "Üzgünüm, şu anda cevap veremiyorum."
+
+
+# ==================== ANAMNESIS ANALYSIS TOOLS ====================
+
+def read_file_content(file: UploadFile, content: bytes) -> str:
+    """PDF veya Word dosyasından metin okur"""
+    text = ""
+    filename = file.filename.lower()
+    
+    try:
+        if filename.endswith('.pdf'):
+            if not pypdf:
+                return "Error: pypdf library not installed."
+            pdf_reader = pypdf.PdfReader(io.BytesIO(content))
+            for page in pdf_reader.pages:
+                text += page.extract_text() + "\n"
+                
+        elif filename.endswith('.docx') or filename.endswith('.doc'):
+            if not docx:
+                return "Error: python-docx library not installed."
+            doc = docx.Document(io.BytesIO(content))
+            for para in doc.paragraphs:
+                text += para.text + "\n"
+        
+        elif filename.endswith('.txt'):
+            text = content.decode('utf-8')
+            
+        return text.strip()
+    except Exception as e:
+        print(f"File reading error: {e}")
+        return f"Error reading file: {str(e)}"
+
+def extract_patient_info_from_text(anamnesis_text: str) -> Dict[str, Any]:
+    """Anemnez metninden hasta bilgilerini ve ilaçları çıkarır"""
+    
+    system_prompt = """You are a medical AI assistant. Extract patient information from the anamnesis text.
+    Return a JSON object with this EXACT structure:
+    {
+      "age": int (default 45 if unknown),
+      "gender": "male" or "female" (default "male" if unknown),
+      "conditions": ["List", "of", "diagnosed", "diseases"],
+      "current_medications": [{"name": "Drug Name", "dosage": "if available"}]
+    }
+    If information is missing, make a reasonable guess or use defaults.
+    Extract ONLY explicit current medications used by the patient.
+    """
+    
+    try:
+        response = openai_client.chat.completions.create(
+            model="anthropic/claude-sonnet-4.5",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Extract info from this text:\n\n{anamnesis_text}"}
+            ],
+            temperature=0.0,
+            response_format={"type": "json_object"}
+        )
+        
+        content = response.choices[0].message.content
+        return json.loads(content)
+    except Exception as e:
+        print(f"Extraction error: {e}")
+        return {
+            "age": 45,
+            "gender": "male",
+            "conditions": [],
+            "current_medications": []
+        }
 
 
 # ==================== FASTAPI INTEGRATION ====================
@@ -691,6 +793,83 @@ def create_openai_agent_app(enable_logging: bool = False):
             except Exception as e:
                 print(f"Chat endpoint error: {e}")
                 return {"reply": "Hata oluştu, lütfen tekrar deneyin."}
+
+        @app.post("/analyze/file")
+        async def analyze_file(
+            file: UploadFile = File(...),
+            new_medications_json: str = Form(...),
+            req: Request = None
+        ):
+            """Anemnez dosyası ile analiz endpoint'i"""
+            start_time = time.time()
+            
+            try:
+                # 1. Dosyayı oku
+                content = await file.read()
+                anamnesis_text = read_file_content(file, content)
+                
+                if "Error" in anamnesis_text:
+                    raise HTTPException(status_code=400, detail=anamnesis_text)
+                
+                # 2. Hasta bilgilerini ve mevcut ilaçları çıkar
+                extracted_info = extract_patient_info_from_text(anamnesis_text)
+                
+                # 3. Yeni ilaçları parse et
+                try:
+                    new_meds_list = json.loads(new_medications_json)
+                except:
+                    new_meds_list = []
+                
+                # 4. Analizi çalıştır
+                result_and_pipeline = analyze_with_openai_agent(
+                    age=extracted_info.get("age", 45),
+                    gender=extracted_info.get("gender", "male"),
+                    conditions=extracted_info.get("conditions", []),
+                    current_medications=extracted_info.get("current_medications", []),
+                    new_medications=new_meds_list,
+                    track_pipeline=backend_logger.enabled
+                )
+                
+                # Unpack result
+                if backend_logger.enabled:
+                    result, pipeline_steps = result_and_pipeline
+                else:
+                    result = result_and_pipeline
+                    pipeline_steps = []
+                
+                # Sonuca çıkarılan bilgileri ekle (Frontend'de göstermek için faydalı olabilir)
+                result["extracted_patient_info"] = extracted_info
+                
+                # Loglama
+                if backend_logger.enabled:
+                    processing_time_ms = (time.time() - start_time) * 1000
+                    client_ip = req.client.host if req.client else "unknown"
+                    
+                    backend_logger.log_request(
+                        endpoint="/analyze/file",
+                        method="POST",
+                        client_ip=client_ip,
+                        user_agent="web-client",
+                        request_data={
+                            "filename": file.filename,
+                            "new_medications": new_meds_list
+                        },
+                        response_data=result,
+                        status_code=200,
+                        processing_time_ms=processing_time_ms,
+                        pipeline_steps=pipeline_steps
+                    )
+                
+                return result
+                
+            except Exception as e:
+                print(f"File analysis error: {e}")
+                return {
+                    "risk_score": 0,
+                    "clinical_summary": f"Dosya analizi hatası: {str(e)}",
+                    "interaction_details": [],
+                    "results_found": False
+                }
         
         return app
     
