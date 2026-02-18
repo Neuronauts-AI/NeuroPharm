@@ -20,4 +20,4 @@ async def prefetch_medications(request: PrefetchRequest):
         }
     except Exception as e:
         print(f"Prefetch error: {e}")
-        return {"success": False, "error": str(e)}
+        return {"success": False, "error": "FDA verileri yüklenirken bir hata oluştu."}

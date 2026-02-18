@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('File analysis error:', error);
         return NextResponse.json(
-            { error: 'Dosya analizi sırasında bir hata oluştu: ' + (error as Error).message },
+            { error: 'Dosya analizi sırasında bir hata oluştu. Lütfen tekrar deneyin.' },
             { status: 500 }
         );
     }

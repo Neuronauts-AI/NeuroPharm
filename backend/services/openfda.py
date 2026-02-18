@@ -108,7 +108,8 @@ def search_openfda_by_drug(drug_name: str, minimal: bool = False) -> Dict[str, A
             return {"found": True, "data": filtered}
 
     except Exception as e:
-        return {"found": False, "drug_name": drug_name, "error": str(e)}
+        print(f"OpenFDA query error for {drug_name}: {e}")
+        return {"found": False, "drug_name": drug_name, "error": "İlaç verileri alınırken bir hata oluştu."}
 
 
 # ──────────────────── prefetch / cache ────────────────────

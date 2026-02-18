@@ -137,7 +137,7 @@ Focus on:
 
     except Exception as e:
         print(f"OpenAI evaluation error: {e}")
-        return {**_FALLBACK_RESPONSE, "clinical_summary": f"OpenAI değerlendirme hatası: {e}"}
+        return {**_FALLBACK_RESPONSE, "clinical_summary": "AI değerlendirme servisi şu anda yanıt veremiyor. Lütfen tekrar deneyin."}
 
 
 # ──────────────────── main pipeline ────────────────────

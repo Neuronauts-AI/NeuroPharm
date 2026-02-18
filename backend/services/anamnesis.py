@@ -29,14 +29,14 @@ def read_file_content(file: UploadFile, content: bytes) -> str:
     try:
         if filename.endswith(".pdf"):
             if not pypdf:
-                return "Error: pypdf library not installed."
+                return "Error: Gerekli kütüphane yüklenemedi."
             reader = pypdf.PdfReader(io.BytesIO(content))
             for page in reader.pages:
                 text += page.extract_text() + "\n"
 
         elif filename.endswith(".docx") or filename.endswith(".doc"):
             if not docx:
-                return "Error: python-docx library not installed."
+                return "Error: Gerekli kütüphane yüklenemedi."
             doc = docx.Document(io.BytesIO(content))
             for para in doc.paragraphs:
                 text += para.text + "\n"
@@ -47,7 +47,7 @@ def read_file_content(file: UploadFile, content: bytes) -> str:
         return text.strip()
     except Exception as e:
         print(f"File reading error: {e}")
-        return f"Error reading file: {e}"
+        return "Error: Dosya okunamadı."
 
 
 _EXTRACTION_PROMPT = """You are a medical AI assistant. Extract patient information from the anamnesis text.

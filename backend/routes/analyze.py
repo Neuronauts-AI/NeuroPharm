@@ -6,6 +6,10 @@ import time
 from fastapi import APIRouter, File, Form, HTTPException, Request, UploadFile
 
 from backend.logger import get_logger
+
+# Max file upload size: 10 MB
+_MAX_FILE_SIZE = 10 * 1024 * 1024
+_ALLOWED_EXTENSIONS = {".pdf", ".docx", ".doc", ".txt"}
 from backend.models import AnalysisRequest
 from backend.services.anamnesis import extract_patient_info_from_text, read_file_content
 from backend.services.llm import analyze_with_openai_agent
@@ -81,7 +85,8 @@ async def analyze(request: AnalysisRequest, req: Request):
                 error_type=type(e).__name__,
                 request_data=request.model_dump(),
             )
-        return {**_ERROR_RESPONSE, "clinical_summary": f"Analiz hatası: {e}"}
+        print(f"Analysis error: {e}")
+        return {**_ERROR_RESPONSE, "clinical_summary": "Analiz sırasında bir hata oluştu. Lütfen tekrar deneyin."}
 
 
 @router.post("/analyze/file")
@@ -95,11 +100,22 @@ async def analyze_file(
     start_time = time.time()
 
     try:
-        # 1. Read file
+        # 0. Validate file
+        filename = (file.filename or "").lower()
+        ext = "." + filename.rsplit(".", 1)[-1] if "." in filename else ""
+        if ext not in _ALLOWED_EXTENSIONS:
+            raise HTTPException(status_code=400, detail="Desteklenmeyen dosya formatı. PDF, DOCX veya TXT yükleyin.")
+
+        # 1. Read file (with size limit)
         content = await file.read()
+        if len(content) > _MAX_FILE_SIZE:
+            raise HTTPException(status_code=413, detail="Dosya boyutu çok büyük. Maksimum 10 MB.")
+        if len(content) == 0:
+            raise HTTPException(status_code=400, detail="Dosya boş.")
+
         anamnesis_text = read_file_content(file, content)
-        if "Error" in anamnesis_text:
-            raise HTTPException(status_code=400, detail=anamnesis_text)
+        if anamnesis_text.startswith("Error"):
+            raise HTTPException(status_code=400, detail="Dosya okunamadı. Lütfen farklı bir dosya deneyin.")
 
         # 2. Extract patient info
         extracted_info = extract_patient_info_from_text(anamnesis_text)
@@ -149,4 +165,4 @@ async def analyze_file(
         raise
     except Exception as e:
         print(f"File analysis error: {e}")
-        return {"clinical_summary": f"Dosya analizi hatası: {e}", "interaction_details": [], "results_found": False}
+        return {"clinical_summary": "Dosya analizi sırasında bir hata oluştu. Lütfen tekrar deneyin.", "interaction_details": [], "results_found": False}

@@ -7,7 +7,9 @@ import json
 import time
 
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import ValidationError
 
 from backend.logger import init_logger, get_logger
 from backend.routes import analyze, chat, health, prefetch
@@ -26,6 +28,27 @@ def create_app(enable_logging: bool = True) -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # ── Validation error handler ─────────────────────────
+    @app.exception_handler(ValidationError)
+    async def validation_error_handler(request: Request, exc: ValidationError):
+        return JSONResponse(
+            status_code=422,
+            content={"detail": "Geçersiz istek verisi. Lütfen girdiğiniz bilgileri kontrol edin."},
+        )
+
+    # ── Request size limit middleware ──────────────────────
+    @app.middleware("http")
+    async def limit_request_size(request: Request, call_next):
+        # 15 MB max for all requests (file uploads etc.)
+        max_size = 15 * 1024 * 1024
+        content_length = request.headers.get("content-length")
+        if content_length and int(content_length) > max_size:
+            return JSONResponse(
+                status_code=413,
+                content={"detail": "İstek boyutu çok büyük. Maksimum 15 MB."},
+            )
+        return await call_next(request)
 
     # ── Logging middleware ──────────────────────────────────
     @app.middleware("http")
