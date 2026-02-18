@@ -25,7 +25,7 @@ load_env()
 # API Keys & URLs
 FAL_KEY = os.getenv("FAL_KEY")
 OPENFDA_BASE_URL = "https://api.fda.gov/drug/label.json"
-LLM_MODEL = "anthropic/claude-sonnet-4.5"
+LLM_MODEL = "anthropic/claude-sonnet-4.6"
 
 # FAL AI client (OpenRouter proxy, OpenAI-compatible)
 llm_client = OpenAI(
