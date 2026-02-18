@@ -68,7 +68,6 @@ export interface PatientSafetyNotes {
 }
 
 export interface AnalysisResponse {
-  risk_score: number;  // 1-10
   results_found: boolean;
   last_updated?: string;
   clinical_summary: string;

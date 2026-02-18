@@ -92,34 +92,7 @@ export default function AnalysisResult({ result, loading, onReplaceWithAlternati
     return null;
   }
 
-  const getRiskLevel = (score: number) => {
-    if (score >= 7) return {
-      level: 'Yüksek',
-      color: '#ef4444',
-      gradient: 'from-red-500/20 via-red-500/10 to-transparent',
-      textColor: 'text-red-400',
-      bgColor: 'bg-red-500/20',
-      borderColor: 'border-red-500'
-    };
-    if (score >= 4) return {
-      level: 'Orta',
-      color: '#f59e0b',
-      gradient: 'from-yellow-500/20 via-yellow-500/10 to-transparent',
-      textColor: 'text-yellow-500',
-      bgColor: 'bg-yellow-500/20',
-      borderColor: 'border-yellow-500'
-    };
-    return {
-      level: 'Düşük',
-      color: '#10b981',
-      gradient: 'from-green-500/20 via-green-500/10 to-transparent',
-      textColor: 'text-green-500',
-      bgColor: 'bg-green-500/20',
-      borderColor: 'border-green-500'
-    };
-  };
 
-  const risk = getRiskLevel(result.risk_score);
 
   return (
     <div className={`mt-6 space-y-6 transition-all duration-500 ${showContent ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
@@ -163,20 +136,7 @@ export default function AnalysisResult({ result, loading, onReplaceWithAlternati
           )}
         </div>
 
-        {/* Risk Score - Simple Badge */}
-        <div className={`relative bg-gradient-to-br ${risk.gradient} rounded-2xl p-6 mb-8 border border-white/10`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <span className={`inline-block px-6 py-3 rounded-full font-bold text-lg ${risk.bgColor} ${risk.textColor} border ${risk.borderColor} shadow-lg`}>
-                {risk.level} Risk
-              </span>
-            </div>
-            <div className="text-right">
-              <div className="text-5xl font-bold text-white mb-1">{result.risk_score}/10</div>
-              <div className="text-white/60 text-sm">Risk Skoru</div>
-            </div>
-          </div>
-        </div>
+
 
         <div className="space-y-4">
           {/* Clinical Summary */}
@@ -188,49 +148,49 @@ export default function AnalysisResult({ result, loading, onReplaceWithAlternati
             </AccordionItem>
           )}
 
-          {/* Interaction Details */}
-          {result.interaction_details && result.interaction_details.length > 0 && (
-            <AccordionItem title="Tespit Edilen Etkileşimler" icon="⚠️">
-              <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${result.interaction_details.length === 1 ? 'lg:grid-cols-1' :
-                result.interaction_details.length === 2 ? 'lg:grid-cols-2' :
-                  result.interaction_details.length === 3 ? 'lg:grid-cols-3' :
-                    'lg:grid-cols-4'
-                }`}>
-                {result.interaction_details.map((interaction, index) => (
-                  <div
-                    key={index}
-                    className={`bg-gradient-to-br ${interaction.severity === 'High'
-                      ? 'from-red-500/20 to-red-500/5 border-red-500/30'
-                      : interaction.severity === 'Medium'
-                        ? 'from-yellow-500/20 to-yellow-500/5 border-yellow-500/30'
-                        : 'from-blue-500/20 to-blue-500/5 border-blue-500/30'
-                      } backdrop-blur-sm rounded-xl p-4 border hover:scale-[1.02] transition-all duration-300 flex flex-col h-full`}
-                  >
-                    <div className="flex items-start justify-between mb-3 gap-2">
-                      <div className="flex flex-wrap gap-1">
-                        {interaction.drugs.map((drug, i) => (
-                          <span key={i} className="px-2 py-0.5 bg-white/10 text-white font-semibold rounded text-xs truncate max-w-[100px]" title={drug}>
-                            {drug}
-                          </span>
-                        ))}
+          {/* Interaction Details - Sadece High/Medium severity göster */}
+          {result.interaction_details && result.interaction_details.length > 0 && (() => {
+            // LOW severity olanları filtrele
+            const significantInteractions = result.interaction_details.filter(
+              interaction => interaction.severity === 'High' || interaction.severity === 'Medium'
+            );
+
+            // Önemli etkileşim varsa göster
+            return significantInteractions.length > 0 ? (
+              <AccordionItem title="Tespit Edilen Etkileşimler" icon="⚠️" defaultOpen>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {significantInteractions.map((interaction, index) => (
+                    <div
+                      key={index}
+                      className={`bg-gradient-to-br ${interaction.severity === 'High'
+                        ? 'from-red-500/20 to-red-500/5 border-red-500/30'
+                        : 'from-yellow-500/20 to-yellow-500/5 border-yellow-500/30'
+                        } backdrop-blur-sm rounded-xl p-4 border hover:scale-[1.02] transition-all duration-300 flex flex-col h-full`}
+                    >
+                      <div className="flex items-start justify-between mb-3 gap-2">
+                        <div className="flex flex-wrap gap-1">
+                          {interaction.drugs.map((drug, i) => (
+                            <span key={i} className="px-2 py-0.5 bg-white/10 text-white font-semibold rounded text-xs truncate max-w-[100px]" title={drug}>
+                              {drug}
+                            </span>
+                          ))}
+                        </div>
+                        <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${interaction.severity === 'High'
+                          ? 'bg-red-500/30 text-red-300 border border-red-500/50'
+                          : 'bg-yellow-500/30 text-yellow-300 border border-yellow-500/50'
+                          }`}>
+                          {interaction.severity === 'High' ? 'Yüksek' : 'Orta'}
+                        </span>
                       </div>
-                      <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${interaction.severity === 'High'
-                        ? 'bg-red-500/30 text-red-300 border border-red-500/50'
-                        : interaction.severity === 'Medium'
-                          ? 'bg-yellow-500/30 text-yellow-300 border border-yellow-500/50'
-                          : 'bg-blue-500/30 text-blue-300 border border-blue-500/50'
-                        }`}>
-                        {interaction.severity === 'High' ? 'Yüksek' : interaction.severity === 'Medium' ? 'Orta' : 'Düşük'}
-                      </span>
+                      <p className="text-white/80 text-sm line-clamp-4 hover:line-clamp-none transition-all cursor-default" title={interaction.mechanism}>
+                        {interaction.mechanism}
+                      </p>
                     </div>
-                    <p className="text-white/80 text-sm line-clamp-4 hover:line-clamp-none transition-all cursor-default" title={interaction.mechanism}>
-                      {interaction.mechanism}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </AccordionItem>
-          )}
+                  ))}
+                </div>
+              </AccordionItem>
+            ) : null; // Sadece LOW varsa hiç gösterme
+          })()}
 
           {/* Alternative Medications */}
           {result.alternatives && result.alternatives.length > 0 && (

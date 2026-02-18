@@ -3,9 +3,13 @@ import { AnalysisRequest, AnalysisResponse } from '@/types';
 
 // Backend URL'leri - Runtime'da okunur (Docker için önemli)
 function getBackendUrls() {
+  const pythonBaseUrl = process.env.PYTHON_API_URL || '';
+  // PYTHON_API_URL is just the base (e.g., http://backend:8081), append /analyze
+  const pythonAnalyzeUrl = pythonBaseUrl ? `${pythonBaseUrl}/analyze` : '';
+
   return {
     n8n: process.env.N8N_WEBHOOK_URL || '',
-    python: process.env.PYTHON_API_URL || '',
+    python: pythonAnalyzeUrl,
   };
 }
 
@@ -17,10 +21,7 @@ function normalizeResponse(data: Record<string, unknown>): AnalysisResponse {
   }
 
   // Eski formatı yeni formata dönüştür
-  const riskScore = typeof data.risk_score === 'number' ? data.risk_score : 1;
-
   return {
-    risk_score: riskScore,
     results_found: (data.results_found as boolean) ?? false,
     clinical_summary: (data.description as string) || (data.clinical_summary as string) || 'Analiz tamamlandı.',
 
@@ -47,9 +48,7 @@ export async function POST(request: NextRequest) {
       // Backend URL yoksa demo response döndür
       console.warn('Backend URL not configured, using demo response');
 
-      // Demo response - gerçek webhook yanıtını simüle eder (risk_score: 1-10)
       const hasInteraction = data.newMedications.length > 0 && data.currentMedications.length > 0;
-      const riskScore = hasInteraction ? Math.floor(Math.random() * 6) + 4 : Math.floor(Math.random() * 3) + 1;
 
       // Alternatif ilaç önerileri oluştur
       const alternativeSuggestions = hasInteraction && data.newMedications.length > 0 ?
@@ -61,7 +60,6 @@ export async function POST(request: NextRequest) {
         : [];
 
       const demoResponse: AnalysisResponse = {
-        risk_score: riskScore,
         results_found: hasInteraction,
         clinical_summary: hasInteraction
           ? `${data.newMedications.length} yeni ilaç ve ${data.currentMedications.length} mevcut ilaç analiz edildi. Risk değerlendirmesi tamamlandı.`
@@ -69,7 +67,7 @@ export async function POST(request: NextRequest) {
 
         interaction_details: hasInteraction ? [{
           drugs: [data.newMedications[0]?.name || '', data.currentMedications[0]?.name || ''],
-          severity: riskScore >= 7 ? 'High' : riskScore >= 4 ? 'Medium' : 'Low',
+          severity: 'Medium',
           mechanism: 'Demo analiz - gerçek etkileşim mekanizması için backend gerekli'
         }] : undefined,
 

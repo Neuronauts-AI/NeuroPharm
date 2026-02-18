@@ -32,15 +32,9 @@ backend_logs/
 *.log
 
 # Docker
-Dockerfile
-Dockerfile.backend
-Dockerfile.backup
-docker-compose.yaml
+docker-compose.yml
 .dockerignore
 
 # IDEs
 .vscode
 .idea
-
-# Specific Large Folders (Verify if needed)
-# drugs/ 

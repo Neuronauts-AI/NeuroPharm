@@ -22,11 +22,34 @@ export default function Home() {
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
+  // Prefetch helper - FDA verilerini önceden çek
+  const prefetchFDAData = async (medications: Medicine[]) => {
+    if (medications.length === 0) return;
+
+    const medicationNames = medications.map(m => m.name);
+
+    try {
+      await fetch('/api/prefetch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ medications: medicationNames }),
+      });
+      console.log('✅ Prefetched FDA data for:', medicationNames);
+    } catch (error) {
+      console.error('Prefetch error:', error);
+    }
+  };
+
   const handleSelectPatient = (patient: Patient) => {
     setSelectedPatient(patient);
     setSelectedMedicines([]);
     setAnalysisResult(null);
     setViewMode('default');
+
+    // Hasta seçildiğinde mevcut ilaçları için prefetch yap
+    if (patient.currentMedications && patient.currentMedications.length > 0) {
+      prefetchFDAData(patient.currentMedications);
+    }
   };
 
   const handleAddPatient = () => {
@@ -63,7 +86,15 @@ export default function Home() {
   };
 
   const handleAddMedicine = (medicine: Medicine) => {
-    setSelectedMedicines([...selectedMedicines, medicine]);
+    const updatedMedicines = [...selectedMedicines, medicine];
+    setSelectedMedicines(updatedMedicines);
+
+    // Yeni ilaç eklendiğinde tüm ilaçlar için prefetch yap
+    const allMedications = [
+      ...(selectedPatient?.currentMedications || []),
+      ...updatedMedicines
+    ];
+    prefetchFDAData(allMedications);
   };
 
   const handleRemoveMedicine = (medicineId: string) => {

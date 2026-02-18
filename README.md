@@ -103,7 +103,6 @@ curl -X POST http://localhost:8080/analyze \
 **Örnek Yanıt (Response):**
 ```json
 {
-  "risk_score": 6,
   "results_found": true,
   "clinical_summary": "Lisinopril ve Ibuprofen birlikte kullanıldığında böbrek fonksiyonlarında bozulma riski artabilir...",
   "interaction_details": [
