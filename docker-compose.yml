@@ -1,0 +1,14 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ddi-app
+    ports:
+      - "3000:3000"
+      - "8081:8081"
+    environment:
+      - FAL_KEY=${FAL_KEY}
+    volumes:
+      - ./backend_logs:/app/backend_logs
+    restart: unless-stopped

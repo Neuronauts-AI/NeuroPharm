@@ -14,10 +14,7 @@ function normalizeResponse(data: Record<string, unknown>): AnalysisResponse {
         return data as unknown as AnalysisResponse;
     }
 
-    const riskScore = typeof data.risk_score === 'number' ? data.risk_score : 1;
-
     return {
-        risk_score: riskScore,
         results_found: (data.results_found as boolean) ?? false,
         clinical_summary: (data.description as string) || (data.clinical_summary as string) || 'Analiz tamamlandı.',
         interaction_details: data.interaction_details as any,
@@ -42,9 +39,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Python backend URL
-        const backendUrl = process.env.PYTHON_API_URL
-            ? `${process.env.PYTHON_API_URL.replace(/\/analyze$/, '')}/analyze/file`
-            : 'http://localhost:8080/analyze/file';
+        const pythonBaseUrl = process.env.PYTHON_API_URL || 'http://localhost:8081';
+        // PYTHON_API_URL is the base (e.g., http://backend:8081), append /analyze/file
+        const backendUrl = `${pythonBaseUrl}/analyze/file`;
 
         console.log(`Forwarding file to backend: ${backendUrl}`);
 
@@ -74,7 +71,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
         console.error('File analysis error:', error);
         return NextResponse.json(
-            { error: 'Dosya analizi sırasında bir hata oluştu: ' + (error as Error).message },
+            { error: 'Dosya analizi sırasında bir hata oluştu. Lütfen tekrar deneyin.' },
             { status: 500 }
         );
     }

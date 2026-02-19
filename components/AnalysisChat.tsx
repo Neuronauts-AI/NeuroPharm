@@ -47,7 +47,6 @@ export default function AnalysisChat({ analysisResult, patient, medicines }: Ana
         try {
             // Prepare context for the backend
             const simplifyAnalysis = (result: AnalysisResponse) => ({
-                risk_score: result.risk_score,
                 summary: result.clinical_summary,
                 interactions: result.interaction_details?.map(i => ({
                     drugs: i.drugs,
@@ -82,15 +81,38 @@ export default function AnalysisChat({ analysisResult, patient, medicines }: Ana
 
             if (!response.ok) throw new Error('Network response was not ok');
 
-            const data = await response.json();
-
+            // Create a placeholder assistant message for streaming
+            const botMessageId = (Date.now() + 1).toString();
             const botMessage: Message = {
-                id: (Date.now() + 1).toString(),
+                id: botMessageId,
                 role: 'assistant',
-                content: data.reply
+                content: ''
             };
-
             setMessages(prev => [...prev, botMessage]);
+
+            // Read streaming response
+            const reader = response.body?.getReader();
+            if (!reader) throw new Error('No response body');
+
+            const decoder = new TextDecoder();
+            let fullContent = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                fullContent += chunk;
+
+                // Update the assistant message with accumulated content
+                setMessages(prev =>
+                    prev.map(msg =>
+                        msg.id === botMessageId
+                            ? { ...msg, content: fullContent }
+                            : msg
+                    )
+                );
+            }
 
         } catch (error) {
             console.error('Chat error:', error);

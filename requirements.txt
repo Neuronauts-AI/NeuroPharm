@@ -1,8 +1,5 @@
 # Drug Interaction Analysis Agent - Python Dependencies
 
-# Anthropic Claude API
-anthropic>=0.40.0
-
 # HTTP client
 httpx>=0.27.0
 
@@ -13,11 +10,10 @@ uvicorn>=0.32.0
 # Pydantic (FastAPI için)
 pydantic>=2.0.0
 
-# OpenAI API (yeni agent için)
+# OpenAI API (FAL AI proxy)
 openai>=1.0.0
 
-# Google AI (FunctionGemma için)
-google-generativeai>=0.4.0
+# File parsing
 pypdf>=5.0.0
 python-docx>=1.0.0
 python-multipart>=0.0.9
