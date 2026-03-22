@@ -10,6 +10,7 @@ interface AnamnesisPanelProps {
     onAnalyze: (file: File, selectedMedicines: Medicine[]) => void;
     isAnalyzing: boolean;
     result: AnalysisResponse | null;
+    feedbackEnabled: boolean;
     patient: Patient | null;
     onReplaceWithAlternative: (originalDrugName: string, alternativeDrug: Medicine) => void;
     onSavePrescription: () => void;
@@ -22,6 +23,7 @@ export default function AnamnesisPanel({
     onAnalyze,
     isAnalyzing,
     result,
+    feedbackEnabled,
     patient,
     onReplaceWithAlternative,
     onSavePrescription,
@@ -219,6 +221,7 @@ export default function AnamnesisPanel({
                             <AnalysisResult
                                 result={result}
                                 loading={false}
+                                feedbackEnabled={feedbackEnabled}
                                 onReplaceWithAlternative={onReplaceWithAlternative}
                                 patient={patient}
                                 selectedMedicines={selectedMedicines}

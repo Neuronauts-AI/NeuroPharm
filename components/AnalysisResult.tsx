@@ -7,6 +7,7 @@ import QuickFeedback from './QuickFeedback';
 interface AnalysisResultProps {
   result: AnalysisResponse | null;
   loading: boolean;
+  feedbackEnabled: boolean;
   onReplaceWithAlternative?: (originalDrugName: string, alternativeDrug: Medicine) => void;
   patient: Patient | null;
   selectedMedicines: Medicine[];
@@ -53,7 +54,7 @@ function AccordionItem({ title, icon, children, defaultOpen = false }: Accordion
   );
 }
 
-export default function AnalysisResult({ result, loading, onReplaceWithAlternative, patient, selectedMedicines, selectedLLMProvider, selectedLLMModel }: AnalysisResultProps) {
+export default function AnalysisResult({ result, loading, feedbackEnabled, onReplaceWithAlternative, patient, selectedMedicines, selectedLLMProvider, selectedLLMModel }: AnalysisResultProps) {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
@@ -376,13 +377,15 @@ export default function AnalysisResult({ result, loading, onReplaceWithAlternati
       </div>
 
       {/* Quick Feedback — Layer 1 */}
-      <QuickFeedback
-        analysisId={`analysis-${Date.now()}`}
-        analysisResult={result}
-        patient={patient}
-        selectedMedicines={selectedMedicines}
-        onComplete={() => {}}
-      />
+      {feedbackEnabled && (
+        <QuickFeedback
+          analysisId={`analysis-${Date.now()}`}
+          analysisResult={result}
+          patient={patient}
+          selectedMedicines={selectedMedicines}
+          onComplete={() => {}}
+        />
+      )}
 
       {/* Analysis Chat Integration */}
       <AccordionItem title="Analiz Asistanı" icon="💬">

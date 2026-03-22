@@ -5,17 +5,21 @@ import { LLMPreset, LLMProvider, LLMModel } from '@/types';
 interface ModelPresetPanelProps {
   provider: LLMProvider;
   model: LLMModel;
+  feedbackEnabled: boolean;
   presets: LLMPreset[];
   onProviderChange: (provider: LLMProvider) => void;
   onModelChange: (model: LLMModel) => void;
+  onFeedbackToggle: (enabled: boolean) => void;
 }
 
 export default function ModelPresetPanel({
   provider,
   model,
+  feedbackEnabled,
   presets,
   onProviderChange,
   onModelChange,
+  onFeedbackToggle,
 }: ModelPresetPanelProps) {
   return (
     <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-4 mb-6">
@@ -28,20 +32,50 @@ export default function ModelPresetPanel({
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label htmlFor="llm-provider" className="text-xs text-[var(--text-muted)]">
-              Provider
-            </label>
-            <select
-              id="llm-provider"
-              value={provider}
-              onChange={(e) => onProviderChange(e.target.value as LLMProvider)}
-              className="text-sm bg-[var(--background)] border border-[var(--card-border)] rounded-md px-2 py-1.5 text-[var(--foreground)]"
-            >
-              <option value="auto">Auto</option>
-              <option value="fal">Fal</option>
-              <option value="openrouter">OpenRouter</option>
-            </select>
+          <div className="flex items-center flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <label htmlFor="llm-provider" className="text-xs text-[var(--text-muted)]">
+                Provider
+              </label>
+              <select
+                id="llm-provider"
+                value={provider}
+                onChange={(e) => onProviderChange(e.target.value as LLMProvider)}
+                className="text-sm bg-[var(--background)] border border-[var(--card-border)] rounded-md px-2 py-1.5 text-[var(--foreground)]"
+              >
+                <option value="auto">Auto</option>
+                <option value="fal">Fal</option>
+                <option value="openrouter">OpenRouter</option>
+              </select>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-[var(--text-muted)]">Feedback</span>
+              <div className="inline-flex rounded-md border border-[var(--card-border)] overflow-hidden">
+                <button
+                  type="button"
+                  onClick={() => onFeedbackToggle(false)}
+                  className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    !feedbackEnabled
+                      ? 'bg-red-500/20 text-red-300'
+                      : 'bg-transparent text-[var(--text-muted)] hover:bg-white/5'
+                  }`}
+                >
+                  Off
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onFeedbackToggle(true)}
+                  className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
+                    feedbackEnabled
+                      ? 'bg-emerald-500/20 text-emerald-300'
+                      : 'bg-transparent text-[var(--text-muted)] hover:bg-white/5'
+                  }`}
+                >
+                  On
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 

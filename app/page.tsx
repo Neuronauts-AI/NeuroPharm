@@ -51,6 +51,7 @@ export default function Home() {
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string>('');
   const [llmProvider, setLlmProvider] = useState<LLMProvider>('auto');
   const [llmModel, setLlmModel] = useState<LLMModel>('deepseek/deepseek-r1');
+  const [feedbackEnabled, setFeedbackEnabled] = useState(false);
 
   // Prefetch helper - FDA verilerini önceden çek
   const prefetchFDAData = async (medications: Medicine[]) => {
@@ -191,6 +192,13 @@ export default function Home() {
     alert(`✅ ${originalDrugName} yerine ${alternativeDrug.name} eklendi!\n\nYeni listeyi tekrar analiz edebilirsiniz.`);
   };
 
+  const handleFeedbackToggle = (enabled: boolean) => {
+    setFeedbackEnabled(enabled);
+    if (!enabled) {
+      setShowSessionFeedback(false);
+    }
+  };
+
   const handleSavePrescription = () => {
     if (!selectedPatient || selectedMedicines.length === 0) {
       alert('Kaydetmek için hasta ve ilaç seçmelisiniz.');
@@ -223,7 +231,9 @@ export default function Home() {
     setSelectedPatient(updatedPatients.find((p) => p.id === selectedPatient.id) || null);
     setSelectedMedicines([]);
     setAnalysisResult(null);
-    setShowSessionFeedback(true);
+    if (feedbackEnabled) {
+      setShowSessionFeedback(true);
+    }
   };
 
   const handleAnamnesisAnalysis = async (file: File, medicines: Medicine[]) => {
@@ -287,6 +297,7 @@ export default function Home() {
           onAnalyze={handleAnamnesisAnalysis}
           isAnalyzing={isAnalyzing}
           result={analysisResult}
+          feedbackEnabled={feedbackEnabled}
           patient={selectedPatient}
           onReplaceWithAlternative={handleReplaceWithAlternative}
           onSavePrescription={handleSavePrescription}
@@ -324,6 +335,7 @@ export default function Home() {
           <AnalysisResult
             result={analysisResult}
             loading={isAnalyzing}
+            feedbackEnabled={feedbackEnabled}
             onReplaceWithAlternative={handleReplaceWithAlternative}
             patient={selectedPatient}
             selectedMedicines={selectedMedicines}
@@ -373,6 +385,7 @@ export default function Home() {
       <PatientList
         patients={patients}
         selectedPatient={selectedPatient}
+        feedbackEnabled={feedbackEnabled}
         onSelectPatient={handleSelectPatient}
         onAddPatient={handleAddPatient}
         onEditPatient={handleEditPatient}
@@ -392,9 +405,11 @@ export default function Home() {
           <ModelPresetPanel
             provider={llmProvider}
             model={llmModel}
+            feedbackEnabled={feedbackEnabled}
             presets={MODEL_PRESETS}
             onProviderChange={setLlmProvider}
             onModelChange={setLlmModel}
+            onFeedbackToggle={handleFeedbackToggle}
           />
 
           {renderContent()}

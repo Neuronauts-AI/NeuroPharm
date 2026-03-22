@@ -7,6 +7,7 @@ import Link from 'next/link';
 interface PatientListProps {
   patients: Patient[];
   selectedPatient: Patient | null;
+  feedbackEnabled: boolean;
   onSelectPatient: (patient: Patient) => void;
   onAddPatient: () => void;
   onEditPatient: (patient: Patient) => void;
@@ -16,6 +17,7 @@ interface PatientListProps {
 export default function PatientList({
   patients,
   selectedPatient,
+  feedbackEnabled,
   onSelectPatient,
   onAddPatient,
   onEditPatient,
@@ -61,13 +63,15 @@ export default function PatientList({
           </button>
         </div>
 
-        <Link
-          href="/feedback"
-          className="block mt-2 bg-gray-700/50 text-white/70 px-3 py-2 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-center text-sm font-medium border border-white/10"
-          title="Geri bildirim dashboard"
-        >
-          📊 Feedback Dashboard
-        </Link>
+        {feedbackEnabled && (
+          <Link
+            href="/feedback"
+            className="block mt-2 bg-gray-700/50 text-white/70 px-3 py-2 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-center text-sm font-medium border border-white/10"
+            title="Geri bildirim dashboard"
+          >
+            📊 Feedback Dashboard
+          </Link>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto">
