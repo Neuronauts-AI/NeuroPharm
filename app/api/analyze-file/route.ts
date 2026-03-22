@@ -33,6 +33,8 @@ export async function POST(request: NextRequest) {
         const formData = await request.formData();
         const file = formData.get('file');
         const newMedicationsJson = formData.get('new_medications_json');
+        const llmProvider = formData.get('llm_provider');
+        const llmModel = formData.get('llm_model');
 
         if (!file) {
             return NextResponse.json({ error: 'Dosya yüklenmedi' }, { status: 400 });
@@ -50,6 +52,12 @@ export async function POST(request: NextRequest) {
         upstreamFormData.append('file', file);
         if (newMedicationsJson) {
             upstreamFormData.append('new_medications_json', newMedicationsJson);
+        }
+        if (llmProvider) {
+            upstreamFormData.append('llm_provider', llmProvider);
+        }
+        if (llmModel) {
+            upstreamFormData.append('llm_model', llmModel);
         }
 
         const response = await fetch(backendUrl, {

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { AnalysisResponse, Patient } from '@/types';
+import { AnalysisResponse, Patient, LLMProvider, LLMModel } from '@/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -9,6 +9,8 @@ interface AnalysisChatProps {
     analysisResult: AnalysisResponse;
     patient: Patient | null;
     medicines: any[];
+    selectedLLMProvider: LLMProvider;
+    selectedLLMModel: LLMModel;
 }
 
 interface Message {
@@ -17,7 +19,7 @@ interface Message {
     content: string;
 }
 
-export default function AnalysisChat({ analysisResult, patient, medicines }: AnalysisChatProps) {
+export default function AnalysisChat({ analysisResult, patient, medicines, selectedLLMProvider, selectedLLMModel }: AnalysisChatProps) {
     const [messages, setMessages] = useState<Message[]>([]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -75,7 +77,9 @@ export default function AnalysisChat({ analysisResult, patient, medicines }: Ana
                     message: userMessage.content,
                     context: simplifyAnalysis(analysisResult),
                     patient_info: simplifyPatient(patient),
-                    history: messages.map(m => ({ role: m.role, content: m.content }))
+                    history: messages.map(m => ({ role: m.role, content: m.content })),
+                    llm_provider: selectedLLMProvider,
+                    llm_model: selectedLLMModel,
                 }),
             });
 

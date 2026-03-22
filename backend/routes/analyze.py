@@ -48,6 +48,8 @@ async def analyze(request: AnalysisRequest, req: Request):
                 for med in request.newMedications
             ],
             track_pipeline=logger.enabled,
+            llm_provider=request.llm_provider or "auto",
+            llm_model=request.llm_model or "deepseek/deepseek-r1",
         )
 
         if logger.enabled:
@@ -93,6 +95,8 @@ async def analyze(request: AnalysisRequest, req: Request):
 async def analyze_file(
     file: UploadFile = File(...),
     new_medications_json: str = Form(...),
+    llm_provider: str = Form("auto"),
+    llm_model: str = Form("deepseek/deepseek-r1"),
     req: Request = None,
 ):
     """Analyse an uploaded anamnesis document."""
@@ -134,6 +138,8 @@ async def analyze_file(
             current_medications=extracted_info.get("current_medications", []),
             new_medications=new_meds_list,
             track_pipeline=logger.enabled,
+            llm_provider=llm_provider,
+            llm_model=llm_model,
         )
 
         if logger.enabled:

@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import ValidationError
 
 from backend.logger import init_logger, get_logger
-from backend.routes import analyze, chat, health, prefetch
+from backend.routes import analyze, chat, health, prefetch, feedback
 
 
 def create_app(enable_logging: bool = True) -> FastAPI:
@@ -100,6 +100,7 @@ def create_app(enable_logging: bool = True) -> FastAPI:
     app.include_router(analyze.router)
     app.include_router(chat.router)
     app.include_router(prefetch.router)
+    app.include_router(feedback.router)
 
     return app
 

@@ -7,9 +7,35 @@ import PatientDetails from '@/components/PatientDetails';
 import MedicineSearch from '@/components/MedicineSearch';
 import AnalysisResult from '@/components/AnalysisResult';
 import AnamnesisPanel from '@/components/AnamnesisPanel';
-import { Patient, Medicine, AnalysisResponse } from '@/types';
+import { Patient, Medicine, AnalysisResponse, LLMProvider, LLMModel, LLMPreset } from '@/types';
 import { mockPatients, mockMedicines } from '@/lib/mockData';
 import ThemeToggle from '@/components/ThemeToggle';
+import SessionFeedback from '@/components/SessionFeedback';
+import ModelPresetPanel from '@/components/ModelPresetPanel';
+
+const MODEL_PRESETS: LLMPreset[] = [
+  {
+    id: 'deepseek-r1',
+    label: 'DeepSeek-R1',
+    model: 'deepseek/deepseek-r1',
+    providerHint: 'both',
+    description: 'Genel akil yurutmeye uygun, yuksek kaliteli yanitlar.',
+  },
+  {
+    id: 'deepseek-r1-distill-qwen-32b',
+    label: 'DeepSeek-R1-Distill-Qwen-32B',
+    model: 'deepseek/deepseek-r1-distill-qwen-32b',
+    providerHint: 'both',
+    description: 'R1 distill varyanti, dengeli hiz ve kalite.',
+  },
+  {
+    id: 'qwen-2.5-32b',
+    label: 'Qwen2.5-32B',
+    model: 'qwen/qwen-2.5-32b-instruct',
+    providerHint: 'both',
+    description: 'Qwen 32B instruct modeli, maliyet/performans dengesi.',
+  },
+];
 
 export default function Home() {
   const [patients, setPatients] = useState<Patient[]>(mockPatients);
@@ -21,6 +47,10 @@ export default function Home() {
   const [analysisResult, setAnalysisResult] = useState<AnalysisResponse | null>(null);
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [showSessionFeedback, setShowSessionFeedback] = useState(false);
+  const [currentAnalysisId, setCurrentAnalysisId] = useState<string>('');
+  const [llmProvider, setLlmProvider] = useState<LLMProvider>('auto');
+  const [llmModel, setLlmModel] = useState<LLMModel>('deepseek/deepseek-r1');
 
   // Prefetch helper - FDA verilerini önceden çek
   const prefetchFDAData = async (medications: Medicine[]) => {
@@ -123,6 +153,8 @@ export default function Home() {
           conditions: selectedPatient.conditions,
           currentMedications: selectedPatient.currentMedications,
           newMedications: selectedMedicines,
+          llm_provider: llmProvider,
+          llm_model: llmModel,
         }),
       });
 
@@ -131,6 +163,8 @@ export default function Home() {
       }
 
       const result = await response.json();
+      const analysisId = `analysis-${Date.now()}`;
+      setCurrentAnalysisId(analysisId);
       setAnalysisResult(result);
     } catch (error) {
       console.error('Analysis error:', error);
@@ -189,7 +223,7 @@ export default function Home() {
     setSelectedPatient(updatedPatients.find((p) => p.id === selectedPatient.id) || null);
     setSelectedMedicines([]);
     setAnalysisResult(null);
-    alert('Reçete başarıyla kaydedildi!');
+    setShowSessionFeedback(true);
   };
 
   const handleAnamnesisAnalysis = async (file: File, medicines: Medicine[]) => {
@@ -199,6 +233,8 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('new_medications_json', JSON.stringify(medicines));
+      formData.append('llm_provider', llmProvider);
+      formData.append('llm_model', llmModel);
 
       const response = await fetch('/api/analyze-file', {
         method: 'POST',
@@ -228,6 +264,7 @@ export default function Home() {
       };
       setSelectedPatient(tempPatient);
       setSelectedMedicines(medicines);
+      setCurrentAnalysisId(`anamnesis-${Date.now()}`);
       setAnalysisResult(result);
 
 
@@ -253,6 +290,8 @@ export default function Home() {
           patient={selectedPatient}
           onReplaceWithAlternative={handleReplaceWithAlternative}
           onSavePrescription={handleSavePrescription}
+          selectedLLMProvider={llmProvider}
+          selectedLLMModel={llmModel}
         />
       );
     }
@@ -288,6 +327,8 @@ export default function Home() {
             onReplaceWithAlternative={handleReplaceWithAlternative}
             patient={selectedPatient}
             selectedMedicines={selectedMedicines}
+            selectedLLMProvider={llmProvider}
+            selectedLLMModel={llmModel}
           />
 
           {analysisResult && selectedMedicines.length > 0 && (
@@ -348,6 +389,14 @@ export default function Home() {
             <ThemeToggle />
           </div>
 
+          <ModelPresetPanel
+            provider={llmProvider}
+            model={llmModel}
+            presets={MODEL_PRESETS}
+            onProviderChange={setLlmProvider}
+            onModelChange={setLlmModel}
+          />
+
           {renderContent()}
         </div>
       </div>
@@ -361,6 +410,23 @@ export default function Home() {
             setEditingPatient(null);
           }}
         />
+      )}
+
+      {/* Session Feedback Modal — Layer 2 */}
+      {showSessionFeedback && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl">
+            <SessionFeedback
+              analysisId={currentAnalysisId}
+              onComplete={() => {
+                setShowSessionFeedback(false);
+              }}
+              onDismiss={() => {
+                setShowSessionFeedback(false);
+              }}
+            />
+          </div>
+        </div>
       )}
     </div>
   );

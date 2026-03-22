@@ -6,7 +6,7 @@ import json
 import time
 from typing import Any, Dict, List
 
-from backend.config import llm_client, LLM_MODEL
+from backend.config import get_llm_context
 from backend.services.openfda import analyze_drug_interactions_openfda
 
 
@@ -101,7 +101,11 @@ def _extract_json(content: str) -> dict:
     return json.loads(content[start:end])
 
 
-def evaluate_with_openai(openfda_data: Dict[str, Any]) -> Dict[str, Any]:
+def evaluate_with_openai(
+    openfda_data: Dict[str, Any],
+    llm_provider: str = "auto",
+    llm_model: str = "deepseek/deepseek-r1",
+) -> Dict[str, Any]:
     """Send OpenFDA data to the LLM for clinical evaluation and return structured JSON."""
     user_message = f"""
 Based on this OpenFDA API data, provide comprehensive clinical drug interaction evaluation:
@@ -117,8 +121,9 @@ Focus on:
 """
 
     try:
-        response = llm_client.chat.completions.create(
-            model=LLM_MODEL,
+        client, resolved_provider, resolved_model = get_llm_context(llm_provider, llm_model)
+        response = client.chat.completions.create(
+            model=resolved_model,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": user_message},
@@ -131,9 +136,14 @@ Focus on:
         print(f"🤖 Raw AI Response: {content[:100]}...")
 
         try:
-            return _extract_json(content)
+            parsed = _extract_json(content)
         except (ValueError, json.JSONDecodeError):
-            return json.loads(content)
+            parsed = json.loads(content)
+
+        if isinstance(parsed, dict):
+            parsed["llm_provider"] = resolved_provider
+            parsed["llm_model"] = resolved_model
+        return parsed
 
     except Exception as e:
         print(f"OpenAI evaluation error: {e}")
@@ -191,6 +201,8 @@ def analyze_with_openai_agent(
     current_medications: List[Dict],
     new_medications: List[Dict],
     track_pipeline: bool = False,
+    llm_provider: str = "auto",
+    llm_model: str = "deepseek/deepseek-r1",
 ) -> tuple:
     """
     Main analysis pipeline:
@@ -237,7 +249,11 @@ def analyze_with_openai_agent(
     print("🤖 LLM Agent: Evaluating OpenFDA data...")
     t1 = time.time()
 
-    evaluation = evaluate_with_openai(openfda_data)
+    evaluation = evaluate_with_openai(
+        openfda_data=openfda_data,
+        llm_provider=llm_provider,
+        llm_model=llm_model,
+    )
 
     step2_ms = (time.time() - t1) * 1000
 

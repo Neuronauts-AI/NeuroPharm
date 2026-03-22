@@ -5,7 +5,7 @@ Chat service — streaming and non-streaming follow-up Q&A over analysis results
 import json
 from typing import Any, Dict, List
 
-from backend.config import llm_client, LLM_MODEL
+from backend.config import get_llm_context
 
 CHAT_SYSTEM_PROMPT = """Sen uzman bir klinik eczacısın. Görevin doktorun sorularına KISA, ÖZ ve NET cevaplar vermek.
 
@@ -53,12 +53,15 @@ def chat_with_analysis(
     context: Dict[str, Any],
     patient_info: Dict[str, Any],
     history: List[Dict[str, str]],
+    llm_provider: str = "auto",
+    llm_model: str = "deepseek/deepseek-r1",
 ) -> str:
     """Non-streaming chat (returns full response at once)."""
     try:
         messages = _build_messages(message, context, patient_info, history)
-        response = llm_client.chat.completions.create(
-            model=LLM_MODEL,
+        client, _, resolved_model = get_llm_context(llm_provider, llm_model)
+        response = client.chat.completions.create(
+            model=resolved_model,
             messages=messages,
             temperature=0.3,
             max_tokens=300,
@@ -74,12 +77,15 @@ def chat_with_analysis_stream(
     context: Dict[str, Any],
     patient_info: Dict[str, Any],
     history: List[Dict[str, str]],
+    llm_provider: str = "auto",
+    llm_model: str = "deepseek/deepseek-r1",
 ):
     """Streaming chat — yields text chunks as they arrive from the LLM."""
     try:
         messages = _build_messages(message, context, patient_info, history)
-        stream = llm_client.chat.completions.create(
-            model=LLM_MODEL,
+        client, _, resolved_model = get_llm_context(llm_provider, llm_model)
+        stream = client.chat.completions.create(
+            model=resolved_model,
             messages=messages,
             temperature=0.3,
             max_tokens=300,

@@ -1,7 +1,8 @@
 
-import { AnalysisResponse, Medicine, Patient } from '@/types';
+import { AnalysisResponse, Medicine, Patient, LLMProvider, LLMModel } from '@/types';
 import { useEffect, useState, ReactNode } from 'react';
 import AnalysisChat from './AnalysisChat';
+import QuickFeedback from './QuickFeedback';
 
 interface AnalysisResultProps {
   result: AnalysisResponse | null;
@@ -9,6 +10,8 @@ interface AnalysisResultProps {
   onReplaceWithAlternative?: (originalDrugName: string, alternativeDrug: Medicine) => void;
   patient: Patient | null;
   selectedMedicines: Medicine[];
+  selectedLLMProvider: LLMProvider;
+  selectedLLMModel: LLMModel;
 }
 
 interface AccordionItemProps {
@@ -50,7 +53,7 @@ function AccordionItem({ title, icon, children, defaultOpen = false }: Accordion
   );
 }
 
-export default function AnalysisResult({ result, loading, onReplaceWithAlternative, patient, selectedMedicines }: AnalysisResultProps) {
+export default function AnalysisResult({ result, loading, onReplaceWithAlternative, patient, selectedMedicines, selectedLLMProvider, selectedLLMModel }: AnalysisResultProps) {
   const [showContent, setShowContent] = useState(false);
 
   useEffect(() => {
@@ -372,12 +375,23 @@ export default function AnalysisResult({ result, loading, onReplaceWithAlternati
         </div>
       </div>
 
+      {/* Quick Feedback — Layer 1 */}
+      <QuickFeedback
+        analysisId={`analysis-${Date.now()}`}
+        analysisResult={result}
+        patient={patient}
+        selectedMedicines={selectedMedicines}
+        onComplete={() => {}}
+      />
+
       {/* Analysis Chat Integration */}
       <AccordionItem title="Analiz Asistanı" icon="💬">
         <AnalysisChat
           analysisResult={result}
           patient={patient}
           medicines={selectedMedicines}
+          selectedLLMProvider={selectedLLMProvider}
+          selectedLLMModel={selectedLLMModel}
         />
       </AccordionItem>
     </div>

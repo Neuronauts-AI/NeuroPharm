@@ -1,0 +1,1110 @@
+[
+  {
+    "id": "preset-1",
+    "label": "aspirin + atorvastatin -> warfarin",
+    "generatedAt": "2026-03-22T12:42:54.004Z",
+    "durationMs": 73715,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 58,
+      "gender": "male",
+      "conditions": [
+        "kalp hastalığı",
+        "yüksek kolesterol"
+      ],
+      "current": [
+        "aspirin",
+        "atorvastatin"
+      ],
+      "incoming": [
+        "warfarin"
+      ]
+    },
+    "request": {
+      "age": 58,
+      "gender": "male",
+      "conditions": [
+        "kalp hastalığı",
+        "yüksek kolesterol"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-1-cur-1",
+          "name": "aspirin",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-1-cur-2",
+          "name": "atorvastatin",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-1-new-1",
+          "name": "warfarin",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": true,
+      "clinical_summary": "Aspirin ve warfarin birleştiğinde kan akışkanlığı artar ve kanama riski artar. Bu durum, kalp hastalığı ve yüksek kolesterol gibi mevcut koşullarla birleşerek ciddi sağlık sorunları yaratabilir.",
+      "interaction_details": [
+        {
+          "drugs": [
+            "Aspirin",
+            "Warfarin"
+          ],
+          "severity": "High",
+          "mechanism": "Aspirin, trombosit fonksiyonunu抑制 ederek kanak akışkanlığını artırır. Warfarin ise, kalsüum karboksilaz enzimini抑制 ederek kana akışkanlık yapar. Bu iki etkinin birleşmesi, kanama riskini önemli ölçüde artırır."
+        }
+      ],
+      "alternatives": [
+        {
+          "original_drug": "Warfarin",
+          "suggested_alternative": "Dabigatran",
+          "reason": "Dabigatran, trombin etkisiz hale getirir ve kanama riski daha düşük."
+        },
+        {
+          "original_drug": "Warfarin",
+          "suggested_alternative": "Rivaroxaban",
+          "reason": "Rivaroxaban, Xa faktörünü抑制 eder ve daha az izlenimli bir seçenek sunar."
+        }
+      ],
+      "monitoring_plan": [
+        {
+          "test": "INR",
+          "frequency": "Haftalık",
+          "reason": "Kanak akışkanlık seviyesini takip etmek için."
+        },
+        {
+          "test": "Bilişsel testler",
+          "frequency": "Aylık",
+          "reason": "Hepatik zararları kontrol etmek için."
+        }
+      ],
+      "dosage_warnings": [
+        "Warfarin dozajı, INR sonuçlarına göre düzenlenecek.",
+        "Aspirin dozajı, kanama riski göz önünde bulundurularak azaltılabilir."
+      ],
+      "special_population_alerts": [
+        "Yüksek yaşlılar için daha düşük dozajlar önerilir.",
+        "Yüksek kolesterol sebebiyle hepatik risk artar."
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Nasal kanama, mavi lekeler, hafif baş ağrısı gibi.",
+        "red_flags": "Aniden kanama, vurultu, solunum zorlukları gibi ciddi semptomlar."
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  },
+  {
+    "id": "preset-2",
+    "label": "paracetamol -> aspirin",
+    "generatedAt": "2026-03-22T12:43:46.997Z",
+    "durationMs": 52979,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 32,
+      "gender": "female",
+      "conditions": [
+        "migren"
+      ],
+      "current": [
+        "paracetamol"
+      ],
+      "incoming": [
+        "aspirin"
+      ]
+    },
+    "request": {
+      "age": 32,
+      "gender": "female",
+      "conditions": [
+        "migren"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-2-cur-1",
+          "name": "paracetamol",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-2-new-1",
+          "name": "aspirin",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": true,
+      "clinical_summary": "Paracetamol ve aspirin birleşiminde, yüksek dozda kullanımı ile ilgili olabilir. Özellikle mide iltihapları gibi yan etkiler göz önünde bulundurulmalıdır.",
+      "interaction_details": [
+        {
+          "drugs": [
+            "Paracetamol",
+            "Aspirin"
+          ],
+          "severity": "Orta",
+          "mechanism": "Paracetamol ve aspirin birleşiminde, mide iltihapları gibi yan etkiler daha sık görülebilir."
+        }
+      ],
+      "alternatives": [
+        {
+          "original_drug": "Aspirin",
+          "suggested_alternative": "Ibuprofen",
+          "reason": "Daha az mide iltihapları riski"
+        }
+      ],
+      "monitoring_plan": [
+        {
+          "test": "Gastrik iltihap testleri",
+          "frequency": "Aylık",
+          "reason": "Mide iltihapları izlenmesi"
+        }
+      ],
+      "dosage_warnings": [
+        "Paracetamol: 24 saat içinde en fazla 4000 mg",
+        "Aspirin: 24 saat içinde en fazla 4000 mg"
+      ],
+      "special_population_alerts": [
+        "Migren hastaları için dikkatli olun"
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Mide дискомфорт, baş ağrısı",
+        "red_flags": "Ağır mide iltihapları, kanama"
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  },
+  {
+    "id": "preset-3",
+    "label": "paracetamol -> finasteride",
+    "generatedAt": "2026-03-22T12:44:46.068Z",
+    "durationMs": 59071,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 32,
+      "gender": "female",
+      "conditions": [
+        "migren"
+      ],
+      "current": [
+        "paracetamol"
+      ],
+      "incoming": [
+        "finasteride"
+      ]
+    },
+    "request": {
+      "age": 32,
+      "gender": "female",
+      "conditions": [
+        "migren"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-3-cur-1",
+          "name": "paracetamol",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-3-new-1",
+          "name": "finasteride",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": true,
+      "clinical_summary": "Paracetamol ve finasteride arasında klinik olarak önemli bir etkileşim mevcut. Finasteride, Paracetamol'un metabolizasyonu üzerinde etkili olabilir ve bu durum, Paracetamol'un dozajını ve kullanımlarını gözden geçirmenin gerekliliğini ortaya koymaktadır.",
+      "interaction_details": [
+        {
+          "drugs": [
+            "Paracetamol",
+            "Finasteride"
+          ],
+          "severity": "Orta",
+          "mechanism": "Finasteride, situesterol P450-zedelik_drug_metabolizing_enzyme_sistemi üzerinde etkili olabilir ve bu durum Paracetamol'un metabolizasyonunu etkileyebilir."
+        }
+      ],
+      "alternatives": [
+        {
+          "original_drug": "Paracetamol",
+          "suggested_alternative": "Ibuprofen",
+          "reason": "Ibuprofen, Paracetamol'a göre daha az etkileşim riski ile geliyor."
+        }
+      ],
+      "monitoring_plan": [
+        {
+          "test": "AST/ALT",
+          "frequency": "Aylık",
+          "reason": "Paracetamol kullanımı sırasında肝 functions testleri izlenmeli."
+        },
+        {
+          "test": "PSA",
+          "frequency": "Yıllık",
+          "reason": "Finasteride kullanımı sırasında prostatik sızıntılarını takip etmek için."
+        }
+      ],
+      "dosage_warnings": [
+        "Paracetamol'un maksimum dozajı 4000 mg/gün olmalıdır. Finasteride ile birlikte kullanıldığında bu dozajı aşmamalıdır.",
+        "Finasteride, 1 mg/gün olarak kullanıma alınmalıdır ve bu dozajda düzenli olarak devam etmeli."
+      ],
+      "special_population_alerts": [
+        "Bu hasta, migren belirtileri göstermektedir. Bu durum, Paracetamol kullanımı sırasında önyüksel etkilerin göz önünde bulundurulması gerekebilir."
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Paracetamol: baş ağrısı, mide rahatsızlığı. Finasteride: libidö azalması, erkekliksüzmü",
+        "red_flags": "Paracetamol: akut lever zehirlenmesi belirtileri. Finasteride: cinsel performans kaybı, prostat zehirlenmesi."
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  },
+  {
+    "id": "preset-4",
+    "label": "metformin + ramipril -> aspirin",
+    "generatedAt": "2026-03-22T12:46:41.270Z",
+    "durationMs": 115202,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 45,
+      "gender": "male",
+      "conditions": [
+        "diyabet",
+        "hipertansiyon"
+      ],
+      "current": [
+        "metformin",
+        "ramipril"
+      ],
+      "incoming": [
+        "aspirin"
+      ]
+    },
+    "request": {
+      "age": 45,
+      "gender": "male",
+      "conditions": [
+        "diyabet",
+        "hipertansiyon"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-4-cur-1",
+          "name": "metformin",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-4-cur-2",
+          "name": "ramipril",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-4-new-1",
+          "name": "aspirin",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": true,
+      "clinical_summary": "Metformin ve ramipril kullanımda olan bir hastada aspirin eklenmesi, laktik asitozis ve hipokalemia gibi ciddi etkileri göze alabilir. Aspirin, metformin'in emilimini etkileyip sistemik maruziyetini artıracaktır. Ayrıca, ramipril ile birlikte aspirin, hipotansiyon riskini artırabilir.",
+      "interaction_details": [
+        {
+          "drugs": [
+            "Metformin",
+            "Aspirin"
+          ],
+          "severity": "High",
+          "mechanism": "Aspirin, metformin'in renal emilimini engelleyerek sistemik seviyesini artırabilir. Bu durum laktik asitozis riskini artıracaktır."
+        },
+        {
+          "drugs": [
+            "Ramipril",
+            "Aspirin"
+          ],
+          "severity": "Medium",
+          "mechanism": "Aspirin ve ramipril birlikte kullanıldığında hipotansiyon riski artabilir."
+        }
+      ],
+      "alternatives": [
+        {
+          "original_drug": "Aspirin",
+          "suggested_alternative": "Clopidogrel",
+          "reason": "Daha düşük laktik asitozis riski."
+        },
+        {
+          "original_drug": "Aspirin",
+          "suggested_alternative": "Dipyridamole",
+          "reason": "Ramipril ile daha az etkileşim."
+        }
+      ],
+      "monitoring_plan": [
+        {
+          "test": "Laktat seviyesi",
+          "frequency": "Haftalık",
+          "reason": "Laktik asitozis riski nedeniyle."
+        },
+        {
+          "test": "Kaliyum seviyesi",
+          "frequency": "Aylık",
+          "reason": "Hipokalemia riski nedeniyle."
+        },
+        {
+          "test": "Blood pressure",
+          "frequency": "Günlük",
+          "reason": "Hipotansiyon riski nedeniyle."
+        }
+      ],
+      "dosage_warnings": [
+        "Metformin dozu, aspirin eklenmesi sırasında gözden geçirilmelidir. Maksimum doz 2000 mg/gün olmalıdır.",
+        "Ramipril dozu, aspirin eklenmesi sırasında azaltılabilir. Başlangıç dozu 2.5 mg iki kez günde olmalıdır."
+      ],
+      "special_population_alerts": [
+        "Diyabet ve hipertansiyon gibi kronik hastalıklar olan hastalarda aspirin kullanımı daha riskli olabilir."
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Baş ağrısı, mide rahatsızlığı, hipotansiyon gibi etkiler tipikdir.",
+        "red_flags": "Aniden laktat artışı, hipokalemia belirtileri, şiddetli hipotansiyon gibi durumlar acil tıbbi yardım gerektirir."
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  },
+  {
+    "id": "preset-5",
+    "label": "metformin + ramipril -> fosfomycin + klopidogrel + rosuvastatin",
+    "generatedAt": "2026-03-22T12:48:26.036Z",
+    "durationMs": 104766,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 45,
+      "gender": "male",
+      "conditions": [
+        "diyabet",
+        "hipertansiyon"
+      ],
+      "current": [
+        "metformin",
+        "ramipril"
+      ],
+      "incoming": [
+        "fosfomycin",
+        "klopidogrel",
+        "rosuvastatin"
+      ]
+    },
+    "request": {
+      "age": 45,
+      "gender": "male",
+      "conditions": [
+        "diyabet",
+        "hipertansiyon"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-5-cur-1",
+          "name": "metformin",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-5-cur-2",
+          "name": "ramipril",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-5-new-1",
+          "name": "fosfomycin",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-5-new-2",
+          "name": "klopidogrel",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-5-new-3",
+          "name": "rosuvastatin",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": true,
+      "clinical_summary": "Metformin ve ramipril kullanımda fosfomycin, klopidogrel ve rosuvastatin ekleniyor. Metformin ile fosfomycin ve klopidogrel arasında metabolik etkileşim riski var. Ramipril ile klopidogrel arasında trombosit toplama etkisi artışı olabilir. Rosuvastatin ile metformin arasında hevesiklik riski mevcut. Bu interaksiyonlar, laktik asitoz, trombositopeni ve hevesiklik gibi ciddi olgulara neden olabilir.",
+      "interaction_details": [
+        {
+          "drugs": [
+            "Metformin",
+            "Fosfomycin"
+          ],
+          "severity": "High",
+          "mechanism": "Fosfomycin, metformin'in renaletik transport sistemini etkileyebilir ve sistemik exposürü artıracaktır."
+        },
+        {
+          "drugs": [
+            "Ramipril",
+            "Klopidogrel"
+          ],
+          "severity": "Medium",
+          "mechanism": "Ramipril, klopidogrel'in trombosit toplama etkisini artıracaktır."
+        },
+        {
+          "drugs": [
+            "Rosuvastatin",
+            "Metformin"
+          ],
+          "severity": "High",
+          "mechanism": "Rosuvastatin, metformin ile birlikte hevesiklik riskini artırabilir."
+        }
+      ],
+      "alternatives": [
+        {
+          "original_drug": "Fosfomycin",
+          "suggested_alternative": "Nitrofurantoin",
+          "reason": "Daha düşük laktik asitoz riski."
+        },
+        {
+          "original_drug": "Klopidogrel",
+          "suggested_alternative": "Aspirin",
+          "reason": "Daha düşük trombosit toplama etkisi."
+        },
+        {
+          "original_drug": "Rosuvastatin",
+          "suggested_alternative": "Atorvastatin",
+          "reason": "Daha düşük hevesiklik riski."
+        }
+      ],
+      "monitoring_plan": [
+        {
+          "test": "Laktik asit seviyesi",
+          "frequency": "Haftalık",
+          "reason": "Metformin ve fosfomycin kullanımı sırasında laktik asitoz riski."
+        },
+        {
+          "test": "Trombosit sayımı",
+          "frequency": "2 haftalık",
+          "reason": "Ramipril ve klopidogrel kullanımı sırasında trombositopeni riski."
+        },
+        {
+          "test": "HbA1c",
+          "frequency": "Aylık",
+          "reason": "Rosuvastatin ve metformin kullanımı sırasında血糖 kontrolü."
+        }
+      ],
+      "dosage_warnings": [
+        "Metformin'in maksimum dozu 2000 mg/gün olmalıdır.",
+        "Ramipril'in başlangıç dozu 2.5 mg/gün olmalıdır.",
+        "Rosuvastatin'in dozu 40 mg/gün不得超过."
+      ],
+      "special_population_alerts": [
+        "Diyabet ve hipertansiyon olan hastalarda metabolik ve trombosit etkileşimleri daha yüksek risk."
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Baş ağrısı, mide bulantısı, asthenia.",
+        "red_flags": "Laktik asitoz belirtileri, trombositopeni, hevesiklik."
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  },
+  {
+    "id": "preset-6",
+    "label": "metformin + ramipril -> aspirin + fosfomycin + rosuvastatin",
+    "generatedAt": "2026-03-22T12:50:36.794Z",
+    "durationMs": 130758,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 45,
+      "gender": "male",
+      "conditions": [
+        "diyabet",
+        "hipertansiyon"
+      ],
+      "current": [
+        "metformin",
+        "ramipril"
+      ],
+      "incoming": [
+        "aspirin",
+        "fosfomycin",
+        "rosuvastatin"
+      ]
+    },
+    "request": {
+      "age": 45,
+      "gender": "male",
+      "conditions": [
+        "diyabet",
+        "hipertansiyon"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-6-cur-1",
+          "name": "metformin",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-6-cur-2",
+          "name": "ramipril",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-6-new-1",
+          "name": "aspirin",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-6-new-2",
+          "name": "fosfomycin",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-6-new-3",
+          "name": "rosuvastatin",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": true,
+      "clinical_summary": "Metformin ve ramipril kullanımda olan bir hastada aspirin, fosfomycin ve rosuvastatin ekleniyor. Metformin ile aspirin arasında laktik asitoloji riski, metformin ile fosfomycin arasında dişidiridirik interaksiyon, ramipril ile fosfomycin arasında dişidiridirik interaksiyon, ramipril ile rosuvastatin arasında rhabdomyoliz riski var. Bu interaksiyonlar genelde orta seviyedir ve klinik takip gereklidir.",
+      "interaction_details": [
+        {
+          "drugs": [
+            "Metformin",
+            "Aspirin"
+          ],
+          "severity": "Orta",
+          "mechanism": "Aspirin, metformin'in laktik asitoloji riskini artırabilir."
+        },
+        {
+          "drugs": [
+            "Metformin",
+            "Fosfomycin"
+          ],
+          "severity": "Orta",
+          "mechanism": "Fosfomycin, metformin'in sistemik exposürünü artırabilir."
+        },
+        {
+          "drugs": [
+            "Ramipril",
+            "Fosfomycin"
+          ],
+          "severity": "Orta",
+          "mechanism": "Fosfomycin, ramipril'in dişidiridirik interaksiyon riskini artırabilir."
+        },
+        {
+          "drugs": [
+            "Ramipril",
+            "Rosuvastatin"
+          ],
+          "severity": "Orta",
+          "mechanism": "Rosuvastatin, ramipril ile birlikte rhabdomyoliz riskini artırabilir."
+        }
+      ],
+      "alternatives": [
+        {
+          "original_drug": "Aspirin",
+          "suggested_alternative": "Clopidogrel",
+          "reason": "Daha düşük laktik asitoloji riski."
+        },
+        {
+          "original_drug": "Fosfomycin",
+          "suggested_alternative": "Nitrofurantoin",
+          "reason": "Daha az dişidiridirik interaksiyon."
+        },
+        {
+          "original_drug": "Rosuvastatin",
+          "suggested_alternative": "Atorvastatin",
+          "reason": "Daha düşük rhabdomyoliz riski."
+        }
+      ],
+      "monitoring_plan": [
+        {
+          "test": "Laktik asit",
+          "frequency": "Bir ayda bir",
+          "reason": "Metformin ve aspirin kullanımı sırasında laktik asitoloji riski."
+        },
+        {
+          "test": "AST/ALT",
+          "frequency": "Bir ayda bir",
+          "reason": "Rosuvastatin kullanımı sırasında heptik fonksiyon kontrolü."
+        },
+        {
+          "test": "Kreatin kinase",
+          "frequency": "Bir ayda bir",
+          "reason": "Ramipril ve rosuvastatin kullanımı sırasında rhabdomyoliz riski."
+        }
+      ],
+      "dosage_warnings": [
+        "Metformin'in maksimum dozu 2000 mg/gün olmalıdır.",
+        "Ramipril'in başlangıç dozu 2.5 mg/gün olmalıdır.",
+        "Rosuvastatin'in dozu 40 mg/gün不得超过."
+      ],
+      "special_population_alerts": [
+        "Diyabet ve hipertansiyon olan hastalarda ekstra dikkat gerekmektedir."
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Baş ağrısı, mide bulantısı, asthenia.",
+        "red_flags": "Aniden kas sızlaması, derin nefes alınsama zorluğu, aniden kanaması."
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  },
+  {
+    "id": "preset-7",
+    "label": "paracetamol -> paracetamol",
+    "generatedAt": "2026-03-22T12:51:28.200Z",
+    "durationMs": 51406,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 32,
+      "gender": "female",
+      "conditions": [
+        "migren"
+      ],
+      "current": [
+        "paracetamol"
+      ],
+      "incoming": [
+        "paracetamol"
+      ]
+    },
+    "request": {
+      "age": 32,
+      "gender": "female",
+      "conditions": [
+        "migren"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-7-cur-1",
+          "name": "paracetamol",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-7-new-1",
+          "name": "paracetamol",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": false,
+      "clinical_summary": "Girilen verilere göre mevcut ve yeni reçeteler arasında etkileşim bulunmamıştır. Paracetamol (acetaminofen) kullanımı genellikle güvenlidir ve ciddi etkileşimler azdır.",
+      "interaction_details": [],
+      "alternatives": [],
+      "monitoring_plan": [],
+      "dosage_warnings": [
+        "Günlük maksimum doz 4000 mg'ye kadar olmalıdır. 6 saat aralıkla 2 x 500 mg tablolet almak önerilir. 24 saat içinde 6 tabloletten fazla almak ciddi lever hasarına neden olabilir."
+      ],
+      "special_population_alerts": [
+        "Hamile kadinlar için önerilen doz 2000 mg/gün olmalıdır. Eski yetişkinlerde lever hasar riski artabilir."
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Nadir olarak mide rahatsızlığı, baş ağrısı gibi hafif etkiler görülebilir.",
+        "red_flags": "Aşırı doz alındığında ciddi lever hasarı, anidansızlık, komalılık gibi semptomlar ortaya çıkabilir. Bu durumlar acil tıbbi yardım gerektirir."
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  },
+  {
+    "id": "preset-8",
+    "label": "amlodipine + calcium carbonate + levothyroxine -> paracetamol",
+    "generatedAt": "2026-03-22T12:52:46.988Z",
+    "durationMs": 78787,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 67,
+      "gender": "female",
+      "conditions": [
+        "hipertansiyon",
+        "hipotiroidi",
+        "osteoporoz"
+      ],
+      "current": [
+        "amlodipine",
+        "calcium carbonate",
+        "levothyroxine"
+      ],
+      "incoming": [
+        "paracetamol"
+      ]
+    },
+    "request": {
+      "age": 67,
+      "gender": "female",
+      "conditions": [
+        "hipertansiyon",
+        "hipotiroidi",
+        "osteoporoz"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-8-cur-1",
+          "name": "amlodipine",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-8-cur-2",
+          "name": "calcium carbonate",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-8-cur-3",
+          "name": "levothyroxine",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-8-new-1",
+          "name": "paracetamol",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": true,
+      "clinical_summary": "Amlodipine, levothyroxine, calcium carbonate ve paracetamol kombinasyonu sırasında dikkatle izlenmelidir. Özellikle amlodipine ile CYP3A inhibitörleri arasında etkileşim olabilir ve bu durum hipotansiyon ve edema riskini artıracaktır. Levothyroxine ile kalsiyum karbonat arasında da etkileşim olabilir ve tiroid hormonunun emilimini azaltabilir. Paracetamol genellikle güvenli olsa da, uzun süreli kullanımda lever hasarları riski vardır.",
+      "interaction_details": [
+        {
+          "drugs": [
+            "amlodipine",
+            "CYP3A inhibitörleri"
+          ],
+          "severity": "Orta",
+          "mechanism": "CYP3A inhibitörleri amlodipine'in sistemik dozunu artıracaktır."
+        },
+        {
+          "drugs": [
+            "levothyroxine",
+            "kalsiyum karbonat"
+          ],
+          "severity": "Orta",
+          "mechanism": "Kalsiyum karbonat levothyroxine'in emilimini azaltabilir ve hipotiroidizm riskini artıracaktır."
+        }
+      ],
+      "alternatives": [
+        {
+          "original_drug": "kalsiyum karbonat",
+          "suggested_alternative": "kalsiyum glukonat",
+          "reason": "Levothyroxine etkisine daha az etkili olabilir."
+        },
+        {
+          "original_drug": "amlodipine",
+          "suggested_alternative": "diltiazem",
+          "reason": "CYP3A inhibitörleri ile daha az etkileşim riski."
+        }
+      ],
+      "monitoring_plan": [
+        {
+          "test": "TSH seviyesi",
+          "frequency": "Aylık",
+          "reason": "Levothyroxine etkisini takip etmek için."
+        },
+        {
+          "test": "Bölgesel kan basıncı",
+          "frequency": "Haftalık",
+          "reason": "Amlodipine ile ilişkili hipotansiyon riskini kontrol etmek için."
+        }
+      ],
+      "dosage_warnings": [
+        "Amlodipine dozu, CYP3A inhibitörleri ile birlikte kullanıldığında azaltılabilir.",
+        "Levothyroxine dozu, kalsiyum karbonat ile birlikte kullanıldığında artırmalıdır."
+      ],
+      "special_population_alerts": [
+        "Elderly patients are at higher risk for hypotension and drug interactions."
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Amlodipine: edema, hipotansiyon. Levothyroxine: agitasyon, kardiyak hız. Paracetamol: mide rahatsızlığı, baş ağrısı.",
+        "red_flags": "Anavatranlık kan basıncı düşüşü, kardiyak arritmi, lever hasarı belirtileri."
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  },
+  {
+    "id": "preset-9",
+    "label": "paracetamol -> codeine",
+    "generatedAt": "2026-03-22T12:53:47.006Z",
+    "durationMs": 60018,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 32,
+      "gender": "female",
+      "conditions": [
+        "migren"
+      ],
+      "current": [
+        "paracetamol"
+      ],
+      "incoming": [
+        "codeine"
+      ]
+    },
+    "request": {
+      "age": 32,
+      "gender": "female",
+      "conditions": [
+        "migren"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-9-cur-1",
+          "name": "paracetamol",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-9-new-1",
+          "name": "codeine",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": true,
+      "clinical_summary": "Paracetamol ve codein kombinasyonu, CYP2D6 enzimine bağlı olarak metabolizmada etkileşim gösterebilir. Bu durum, codein'in etkin metabolitleri olan morfin seviyelerini azaltabilir veya artıabilir, bu da analjezik etkiyi azaltabilir veya opioid geri çekme belirtileri gösterebilir.",
+      "interaction_details": [
+        {
+          "drugs": [
+            "Paracetamol",
+            "Codein"
+          ],
+          "severity": "Orta",
+          "mechanism": "Codein, CYP2D6 enzimi tarafından morfin olarak metabolize edilir. Paracetamol, CYP2D6'in抑制剂 olarak çalışabilir ve bu metabolizma etkisine neden olabilir."
+        }
+      ],
+      "alternatives": [
+        {
+          "original_drug": "Codein",
+          "suggested_alternative": "Ibuprofen",
+          "reason": "Daha düşük opioid riski ve metabolizma etkileri."
+        }
+      ],
+      "monitoring_plan": [
+        {
+          "test": "Ateş ve solunum kontrolü",
+          "frequency": "Günlük",
+          "reason": "Respiratory depression izlenimleri için."
+        },
+        {
+          "test": "INR",
+          "frequency": "Haftalık",
+          "reason": "Paracetamol kullanımı sırasında INR artışı kontrolü."
+        }
+      ],
+      "dosage_warnings": [
+        "Codein dozajı, CYP2D6 genotipi doğrultusunda ayarlanmalı.",
+        "Paracetamol toplam günlük dozajı 4000 mg'yi geçmemeli."
+      ],
+      "special_population_alerts": [
+        "Gantrlı metabolizma riski olan hasta için dikkatli takip gerekmektedir."
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Drowsiness, lightheadedness, dizziness, sedation, shortness of breath, nausea, vomiting, sweating, and constipation.",
+        "red_flags": "Respiratory depression, shock, cardiac arrest."
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  },
+  {
+    "id": "preset-10",
+    "label": "aspirin + atorvastatin -> paracetamol",
+    "generatedAt": "2026-03-22T12:55:48.667Z",
+    "durationMs": 121661,
+    "source": "live-backend",
+    "backendUrl": "http://localhost:8081/analyze",
+    "signature": {
+      "age": 58,
+      "gender": "male",
+      "conditions": [
+        "kalp hastalığı",
+        "yüksek kolesterol"
+      ],
+      "current": [
+        "aspirin",
+        "atorvastatin"
+      ],
+      "incoming": [
+        "paracetamol"
+      ]
+    },
+    "request": {
+      "age": 58,
+      "gender": "male",
+      "conditions": [
+        "kalp hastalığı",
+        "yüksek kolesterol"
+      ],
+      "currentMedications": [
+        {
+          "id": "preset-10-cur-1",
+          "name": "aspirin",
+          "dosage": null,
+          "frequency": null
+        },
+        {
+          "id": "preset-10-cur-2",
+          "name": "atorvastatin",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "newMedications": [
+        {
+          "id": "preset-10-new-1",
+          "name": "paracetamol",
+          "dosage": null,
+          "frequency": null
+        }
+      ],
+      "llm_provider": "auto",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b"
+    },
+    "response": {
+      "results_found": true,
+      "clinical_summary": "Aspirin ve atorvastatin arasında klinik olarak önemli bir etkileşim mevcut. Paracetamol eklenmesi bu etkileşimleri etkilemediği gözlemleniyor. Ana klinik endişe, atorvastatin ile aspirin kombinasyonunun rhabdomyolizis ve myopati riskini artırmasıdır.",
+      "interaction_details": [
+        {
+          "drugs": [
+            "Aspirin",
+            "Atorvastatin"
+          ],
+          "severity": "High",
+          "mechanism": "Aspirin, atorvastatin'in CYP3A4 enzimine bağlı metabolizmasını etkileyerek plazma konsantrasyonlarını artıracaktır. Bu durum, atorvastatin'in rhabdomyolizis ve myopati ile ilişkili toksisite riskini artırabilir."
+        }
+      ],
+      "alternatives": [
+        {
+          "original_drug": "Aspirin",
+          "suggested_alternative": "Ibuprofen",
+          "reason": "Ibuprofen aspirin gibi anti-inflamatuur etkileri sunar ve atorvastatin ile daha az etkileşim riski vardır."
+        },
+        {
+          "original_drug": "Atorvastatin",
+          "suggested_alternative": "Rosuvastatin",
+          "reason": "Rosuvastatin, atorvastatin'e göre daha düşük CYP3A4 bağımlılığı ile daha az etkileşim riski vardır."
+        }
+      ],
+      "monitoring_plan": [
+        {
+          "test": "AST/ALT",
+          "frequency": "Aylık",
+          "reason": "Hepatik toksisite izleniminde."
+        },
+        {
+          "test": "Kreatin kinase",
+          "frequency": "Aylık",
+          "reason": "Rhabdomyolizis riski nedeniyle."
+        },
+        {
+          "test": "LDL-kolesterol",
+          "frequency": "3 aylık",
+          "reason": "Kolesterol kontrolü."
+        }
+      ],
+      "dosage_warnings": [
+        "Atorvastatin'ın maksimum dozu 40 mg olarak azaltılmalıdır çünkü aspirin ile birlikte kullanıldığında metabolizma artışı ile toksisite riski artar.",
+        "Paracetamol'ün dozu 4000 mg/gün limitine kadar olmalıdır çünkü daha yüksek dozlarda hepatik toksisite riski artar."
+      ],
+      "special_population_alerts": [
+        "Bu hasta, 58 yaşında ve kalp hastalığı ile yüksek kolesterol gibi kronik hastalıklarla teşhis edilmiştir. Bu nedenle, atorvastatin ve aspirin kombinasyonunun etkileri daha dikkatli izlenmelidir."
+      ],
+      "patient_safety_notes": {
+        "normal_side_effects": "Aspirin: Mide rahatsızlığı, baş ağrısı. Atorvastatin: Diarrhea, mide ağrısı, asthenia. Paracetamol: Mide rahatsızlığı, baş ağrısı.",
+        "red_flags": "Aşağıdaki semptomlar oluştuğunda hemen doktor aranmalıdır: Anksiyet, kas sızılganlıgı, kas zayıflığı, anidurmalık, mide iltihapı, jaundice, anemi, oliguria, anidurmalık, kas kanamaları."
+      },
+      "llm_provider": "fal",
+      "llm_model": "deepseek/deepseek-r1-distill-qwen-32b",
+      "last_updated": "20.03.2026"
+    }
+  }
+]

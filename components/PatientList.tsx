@@ -2,6 +2,7 @@
 
 import { Patient } from '@/types';
 import { useState } from 'react';
+import Link from 'next/link';
 
 interface PatientListProps {
   patients: Patient[];
@@ -59,6 +60,14 @@ export default function PatientList({
             Anemnez
           </button>
         </div>
+
+        <Link
+          href="/feedback"
+          className="block mt-2 bg-gray-700/50 text-white/70 px-3 py-2 rounded-md hover:bg-gray-700 hover:text-white transition-colors text-center text-sm font-medium border border-white/10"
+          title="Geri bildirim dashboard"
+        >
+          📊 Feedback Dashboard
+        </Link>
       </div>
 
       <div className="flex-1 overflow-y-auto">

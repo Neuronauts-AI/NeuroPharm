@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { Medicine, AnalysisResponse, Patient } from '@/types';
+import { Medicine, AnalysisResponse, Patient, LLMProvider, LLMModel } from '@/types';
 import MedicineSearch from './MedicineSearch';
 import AnalysisResult from './AnalysisResult';
 
@@ -13,6 +13,8 @@ interface AnamnesisPanelProps {
     patient: Patient | null;
     onReplaceWithAlternative: (originalDrugName: string, alternativeDrug: Medicine) => void;
     onSavePrescription: () => void;
+    selectedLLMProvider: LLMProvider;
+    selectedLLMModel: LLMModel;
 }
 
 export default function AnamnesisPanel({
@@ -23,6 +25,8 @@ export default function AnamnesisPanel({
     patient,
     onReplaceWithAlternative,
     onSavePrescription,
+    selectedLLMProvider,
+    selectedLLMModel,
 }: AnamnesisPanelProps) {
     const [file, setFile] = useState<File | null>(null);
     const [filePreview, setFilePreview] = useState<string | null>(null);
@@ -218,6 +222,8 @@ export default function AnamnesisPanel({
                                 onReplaceWithAlternative={onReplaceWithAlternative}
                                 patient={patient}
                                 selectedMedicines={selectedMedicines}
+                                selectedLLMProvider={selectedLLMProvider}
+                                selectedLLMModel={selectedLLMModel}
                             />
 
                             <div className="mt-6 mb-10">

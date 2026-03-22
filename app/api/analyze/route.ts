@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { AnalysisRequest, AnalysisResponse } from '@/types';
+import fs from 'fs';
+import path from 'path';
+
+export const runtime = 'nodejs';
 
 // Backend URL'leri - Runtime'da okunur (Docker için önemli)
 function getBackendUrls() {
@@ -35,10 +39,94 @@ function normalizeResponse(data: Record<string, unknown>): AnalysisResponse {
   };
 }
 
+type AnalysisSignature = {
+  age: number;
+  gender: string;
+  conditions: string[];
+  current: string[];
+  incoming: string[];
+};
+
+type RealPrecomputedEntry = {
+  id: string;
+  label: string;
+  generatedAt: string;
+  durationMs: number;
+  signature: AnalysisSignature;
+  request: AnalysisRequest;
+  response: AnalysisResponse;
+};
+
+const REAL_ANALYSES_FILE = path.join(process.cwd(), 'data', 'precomputed-real-analyses.json');
+
+function normalizeText(value: unknown): string {
+  return String(value ?? '').trim().toLowerCase();
+}
+
+function normalizeList(values: unknown[]): string[] {
+  return values.map(normalizeText).filter(Boolean).sort();
+}
+
+function toSignature(data: AnalysisRequest): AnalysisSignature {
+  return {
+    age: Number(data.age || 0),
+    gender: normalizeText(data.gender),
+    conditions: normalizeList((data.conditions || []) as unknown[]),
+    current: normalizeList((data.currentMedications || []).map((m) => m.name)),
+    incoming: normalizeList((data.newMedications || []).map((m) => m.name)),
+  };
+}
+
+function sameSignature(a: AnalysisSignature, b: AnalysisSignature): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
+async function sleepReplayDelay() {
+  const delayMs = 3000 + Math.floor(Math.random() * 2001); // 3000-5000
+  await new Promise((resolve) => setTimeout(resolve, delayMs));
+}
+
+async function maybeServePrecomputed(data: AnalysisRequest): Promise<AnalysisResponse | null> {
+  if (!fs.existsSync(REAL_ANALYSES_FILE)) {
+    return null;
+  }
+
+  let entries: RealPrecomputedEntry[] = [];
+  try {
+    const raw = fs.readFileSync(REAL_ANALYSES_FILE, 'utf-8');
+    entries = JSON.parse(raw) as RealPrecomputedEntry[];
+  } catch (error) {
+    console.error('Failed to read real precomputed analyses file:', error);
+    return null;
+  }
+
+  if (!Array.isArray(entries) || entries.length === 0) {
+    return null;
+  }
+
+  const requestSignature = toSignature(data);
+  const matched = entries.find((entry) => sameSignature(requestSignature, entry.signature));
+  if (!matched || !matched.response) {
+    return null;
+  }
+
+  await sleepReplayDelay();
+  return normalizeResponse(matched.response as unknown as Record<string, unknown>);
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { backend = 'python', ...data } = body as { backend?: 'n8n' | 'python' } & AnalysisRequest;
+
+    const precomputed = await maybeServePrecomputed(data);
+    if (precomputed) {
+      return NextResponse.json(precomputed, {
+        headers: {
+          'x-analysis-source': 'precomputed-replay',
+        },
+      });
+    }
 
     // Seçilen backend URL'ini al
     const BACKEND_URLS = getBackendUrls();
