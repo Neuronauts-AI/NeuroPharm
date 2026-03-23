@@ -120,7 +120,7 @@ if __name__ == "__main__":
     print(f"\n🚀 Starting Drug Interaction Analysis API...")
     print(f"📍 Endpoint: http://localhost:{port}")
     print(f"🌐 Data source: OpenFDA API (real-time)")
-    print(f"🤖 Evaluator: FAL AI → Claude Sonnet")
+    print(f"🤖 Evaluator: OpenRouter → Claude 3.5 Sonnet")
     print(f"📝 Logging: {'ENABLED' if enable_logging else 'DISABLED'}")
     print()
     uvicorn.run(_app, host="0.0.0.0", port=port)

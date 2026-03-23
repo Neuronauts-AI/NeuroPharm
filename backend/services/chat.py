@@ -53,8 +53,8 @@ def chat_with_analysis(
     context: Dict[str, Any],
     patient_info: Dict[str, Any],
     history: List[Dict[str, str]],
-    llm_provider: str = "auto",
-    llm_model: str = "deepseek/deepseek-r1",
+    llm_provider: str = "openrouter",
+    llm_model: str = "anthropic/claude-3.5-sonnet",
 ) -> str:
     """Non-streaming chat (returns full response at once)."""
     try:
@@ -77,8 +77,8 @@ def chat_with_analysis_stream(
     context: Dict[str, Any],
     patient_info: Dict[str, Any],
     history: List[Dict[str, str]],
-    llm_provider: str = "auto",
-    llm_model: str = "deepseek/deepseek-r1",
+    llm_provider: str = "openrouter",
+    llm_model: str = "anthropic/claude-3.5-sonnet",
 ):
     """Streaming chat — yields text chunks as they arrive from the LLM."""
     try:

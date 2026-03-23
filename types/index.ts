@@ -33,20 +33,9 @@ export interface AnalysisRequest {
   llm_model?: LLMModel;
 }
 
-export type LLMProvider = 'auto' | 'fal' | 'openrouter';
+export type LLMProvider = 'openrouter';
 
-export type LLMModel =
-  | 'deepseek/deepseek-r1'
-  | 'deepseek/deepseek-r1-distill-qwen-32b'
-  | 'qwen/qwen-2.5-32b-instruct';
-
-export interface LLMPreset {
-  id: string;
-  label: string;
-  model: LLMModel;
-  providerHint: 'fal' | 'openrouter' | 'both';
-  description: string;
-}
+export type LLMModel = 'anthropic/claude-3.5-sonnet';
 
 // NEW SCHEMA - Cleaner and more clinical
 

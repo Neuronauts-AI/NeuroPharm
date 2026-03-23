@@ -24,8 +24,8 @@ async def chat_endpoint(request: ChatRequest, req: Request):
             context=request.context,
             patient_info=request.patient_info,
             history=request.history,
-            llm_provider=request.llm_provider or "auto",
-            llm_model=request.llm_model or "deepseek/deepseek-r1",
+            llm_provider=request.llm_provider or "openrouter",
+            llm_model=request.llm_model or "anthropic/claude-3.5-sonnet",
         )
         result = {"reply": response_text}
 
@@ -64,8 +64,8 @@ async def chat_stream_endpoint(request: ChatRequest):
                 context=request.context,
                 patient_info=request.patient_info,
                 history=request.history,
-                llm_provider=request.llm_provider or "auto",
-                llm_model=request.llm_model or "deepseek/deepseek-r1",
+                llm_provider=request.llm_provider or "openrouter",
+                llm_model=request.llm_model or "anthropic/claude-3.5-sonnet",
             ):
                 yield chunk
         except Exception as e:

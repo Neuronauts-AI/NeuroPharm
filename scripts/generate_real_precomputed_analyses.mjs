@@ -62,8 +62,8 @@ async function run() {
       conditions: scenario.signature.conditions,
       currentMedications: buildMedList(scenario.signature.current, scenario.id, 'cur'),
       newMedications: buildMedList(scenario.signature.incoming, scenario.id, 'new'),
-      llm_provider: 'auto',
-      llm_model: 'deepseek/deepseek-r1-distill-qwen-32b',
+      llm_provider: 'openrouter',
+      llm_model: 'anthropic/claude-3.5-sonnet',
     };
 
     const t0 = Date.now();

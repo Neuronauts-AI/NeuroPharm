@@ -8,7 +8,9 @@ services:
       - "3000:3000"
       - "8081:8081"
     environment:
-      - FAL_KEY=${FAL_KEY}
+      - OPENROUTER_API_KEY=${OPEN_ROUTER_API_KEY}
+      - DEFAULT_LLM_PROVIDER=openrouter
+      - LLM_MODEL=anthropic/claude-3.5-sonnet
     volumes:
       - ./backend_logs:/app/backend_logs
     restart: unless-stopped

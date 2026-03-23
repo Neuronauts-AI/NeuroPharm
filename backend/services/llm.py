@@ -103,8 +103,8 @@ def _extract_json(content: str) -> dict:
 
 def evaluate_with_openai(
     openfda_data: Dict[str, Any],
-    llm_provider: str = "auto",
-    llm_model: str = "deepseek/deepseek-r1",
+    llm_provider: str = "openrouter",
+    llm_model: str = "anthropic/claude-3.5-sonnet",
 ) -> Dict[str, Any]:
     """Send OpenFDA data to the LLM for clinical evaluation and return structured JSON."""
     user_message = f"""
@@ -201,8 +201,8 @@ def analyze_with_openai_agent(
     current_medications: List[Dict],
     new_medications: List[Dict],
     track_pipeline: bool = False,
-    llm_provider: str = "auto",
-    llm_model: str = "deepseek/deepseek-r1",
+    llm_provider: str = "openrouter",
+    llm_model: str = "anthropic/claude-3.5-sonnet",
 ) -> tuple:
     """
     Main analysis pipeline:

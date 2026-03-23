@@ -7,35 +7,13 @@ import PatientDetails from '@/components/PatientDetails';
 import MedicineSearch from '@/components/MedicineSearch';
 import AnalysisResult from '@/components/AnalysisResult';
 import AnamnesisPanel from '@/components/AnamnesisPanel';
-import { Patient, Medicine, AnalysisResponse, LLMProvider, LLMModel, LLMPreset } from '@/types';
+import { Patient, Medicine, AnalysisResponse, LLMProvider, LLMModel } from '@/types';
 import { mockPatients, mockMedicines } from '@/lib/mockData';
 import ThemeToggle from '@/components/ThemeToggle';
 import SessionFeedback from '@/components/SessionFeedback';
-import ModelPresetPanel from '@/components/ModelPresetPanel';
 
-const MODEL_PRESETS: LLMPreset[] = [
-  {
-    id: 'deepseek-r1',
-    label: 'DeepSeek-R1',
-    model: 'deepseek/deepseek-r1',
-    providerHint: 'both',
-    description: 'Genel akil yurutmeye uygun, yuksek kaliteli yanitlar.',
-  },
-  {
-    id: 'deepseek-r1-distill-qwen-32b',
-    label: 'DeepSeek-R1-Distill-Qwen-32B',
-    model: 'deepseek/deepseek-r1-distill-qwen-32b',
-    providerHint: 'both',
-    description: 'R1 distill varyanti, dengeli hiz ve kalite.',
-  },
-  {
-    id: 'qwen-2.5-32b',
-    label: 'Qwen2.5-32B',
-    model: 'qwen/qwen-2.5-32b-instruct',
-    providerHint: 'both',
-    description: 'Qwen 32B instruct modeli, maliyet/performans dengesi.',
-  },
-];
+const FIXED_LLM_PROVIDER: LLMProvider = 'openrouter';
+const FIXED_LLM_MODEL: LLMModel = 'anthropic/claude-3.5-sonnet';
 
 export default function Home() {
   const [patients, setPatients] = useState<Patient[]>(mockPatients);
@@ -49,8 +27,6 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showSessionFeedback, setShowSessionFeedback] = useState(false);
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string>('');
-  const [llmProvider, setLlmProvider] = useState<LLMProvider>('auto');
-  const [llmModel, setLlmModel] = useState<LLMModel>('deepseek/deepseek-r1');
   const [feedbackEnabled, setFeedbackEnabled] = useState(false);
 
   // Prefetch helper - FDA verilerini önceden çek
@@ -154,8 +130,8 @@ export default function Home() {
           conditions: selectedPatient.conditions,
           currentMedications: selectedPatient.currentMedications,
           newMedications: selectedMedicines,
-          llm_provider: llmProvider,
-          llm_model: llmModel,
+          llm_provider: FIXED_LLM_PROVIDER,
+          llm_model: FIXED_LLM_MODEL,
         }),
       });
 
@@ -243,8 +219,8 @@ export default function Home() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('new_medications_json', JSON.stringify(medicines));
-      formData.append('llm_provider', llmProvider);
-      formData.append('llm_model', llmModel);
+      formData.append('llm_provider', FIXED_LLM_PROVIDER);
+      formData.append('llm_model', FIXED_LLM_MODEL);
 
       const response = await fetch('/api/analyze-file', {
         method: 'POST',
@@ -301,8 +277,8 @@ export default function Home() {
           patient={selectedPatient}
           onReplaceWithAlternative={handleReplaceWithAlternative}
           onSavePrescription={handleSavePrescription}
-          selectedLLMProvider={llmProvider}
-          selectedLLMModel={llmModel}
+          selectedLLMProvider={FIXED_LLM_PROVIDER}
+          selectedLLMModel={FIXED_LLM_MODEL}
         />
       );
     }
@@ -339,8 +315,8 @@ export default function Home() {
             onReplaceWithAlternative={handleReplaceWithAlternative}
             patient={selectedPatient}
             selectedMedicines={selectedMedicines}
-            selectedLLMProvider={llmProvider}
-            selectedLLMModel={llmModel}
+            selectedLLMProvider={FIXED_LLM_PROVIDER}
+            selectedLLMModel={FIXED_LLM_MODEL}
           />
 
           {analysisResult && selectedMedicines.length > 0 && (
@@ -402,15 +378,15 @@ export default function Home() {
             <ThemeToggle />
           </div>
 
-          <ModelPresetPanel
-            provider={llmProvider}
-            model={llmModel}
-            feedbackEnabled={feedbackEnabled}
-            presets={MODEL_PRESETS}
-            onProviderChange={setLlmProvider}
-            onModelChange={setLlmModel}
-            onFeedbackToggle={handleFeedbackToggle}
-          />
+          <div className="mb-6">
+            <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-4 flex items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-semibold text-[var(--foreground)]">LLM Altyapisi</h3>
+                <p className="text-xs text-[var(--text-muted)]">Sistem OpenRouter uzerinden Claude 3.5 Sonnet ile calisiyor.</p>
+              </div>
+              <div className="text-xs text-blue-400 font-medium">openrouter / anthropic/claude-3.5-sonnet</div>
+            </div>
+          </div>
 
           {renderContent()}
         </div>
