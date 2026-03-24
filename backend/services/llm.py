@@ -147,7 +147,12 @@ Focus on:
 
     except Exception as e:
         print(f"OpenAI evaluation error: {e}")
-        return {**_FALLBACK_RESPONSE, "clinical_summary": "AI değerlendirme servisi şu anda yanıt veremiyor. Lütfen tekrar deneyin."}
+        error_text = str(e).lower()
+        if "api key" in error_text or "not configured" in error_text or "unauthorized" in error_text:
+            summary = "OpenRouter API anahtari eksik veya gecersiz. Railway environment degiskenlerini kontrol edin."
+        else:
+            summary = "AI değerlendirme servisi şu anda yanıt veremiyor. Lütfen tekrar deneyin."
+        return {**_FALLBACK_RESPONSE, "clinical_summary": summary}
 
 
 # ──────────────────── main pipeline ────────────────────

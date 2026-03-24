@@ -35,7 +35,7 @@ async def health():
 
     return {
         "status": "healthy" if openfda_status == "healthy" else "degraded",
-        "openrouter_configured": OPENROUTER_API_KEY is not None,
+        "openrouter_configured": bool((OPENROUTER_API_KEY or "").strip()),
         "openfda_status": openfda_status,
         "data_source": "OpenFDA API",
         "logging_enabled": logger.enabled,

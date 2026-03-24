@@ -24,16 +24,18 @@ def load_env():
 load_env()
 
 # API Keys & URLs
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_API_KEY = (os.getenv("OPENROUTER_API_KEY") or os.getenv("OPEN_ROUTER_API_KEY") or "").strip()
 OPENFDA_BASE_URL = "https://api.fda.gov/drug/label.json"
 DEFAULT_LLM_PROVIDER = os.getenv("DEFAULT_LLM_PROVIDER", "openrouter").strip().lower()
 LLM_MODEL = os.getenv("LLM_MODEL", "anthropic/claude-3.5-sonnet")
 
 
 def _build_openrouter_client() -> OpenAI:
+    if not OPENROUTER_API_KEY:
+        raise ValueError("OpenRouter API key not configured. Set OPENROUTER_API_KEY or OPEN_ROUTER_API_KEY.")
     return OpenAI(
         base_url="https://openrouter.ai/api/v1",
-        api_key=OPENROUTER_API_KEY or "",
+        api_key=OPENROUTER_API_KEY,
     )
 
 
