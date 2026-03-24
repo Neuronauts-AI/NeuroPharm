@@ -63,7 +63,7 @@ async function run() {
       currentMedications: buildMedList(scenario.signature.current, scenario.id, 'cur'),
       newMedications: buildMedList(scenario.signature.incoming, scenario.id, 'new'),
       llm_provider: 'openrouter',
-      llm_model: 'anthropic/claude-3.5-sonnet',
+      llm_model: 'anthropic/claude-sonnet-4.6',
     };
 
     const t0 = Date.now();

@@ -13,7 +13,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import SessionFeedback from '@/components/SessionFeedback';
 
 const FIXED_LLM_PROVIDER: LLMProvider = 'openrouter';
-const FIXED_LLM_MODEL: LLMModel = 'anthropic/claude-3.5-sonnet';
+const FIXED_LLM_MODEL: LLMModel = 'anthropic/claude-sonnet-4.6';
 
 export default function Home() {
   const [patients, setPatients] = useState<Patient[]>(mockPatients);
@@ -384,7 +384,7 @@ export default function Home() {
                 <h3 className="text-sm font-semibold text-[var(--foreground)]">LLM Altyapisi</h3>
                 <p className="text-xs text-[var(--text-muted)]">Sistem OpenRouter uzerinden Claude 3.5 Sonnet ile calisiyor.</p>
               </div>
-              <div className="text-xs text-blue-400 font-medium">openrouter / anthropic/claude-3.5-sonnet</div>
+              <div className="text-xs text-blue-400 font-medium">openrouter / anthropic/claude-sonnet-4.6</div>
             </div>
           </div>
 

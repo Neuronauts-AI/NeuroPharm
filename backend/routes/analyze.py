@@ -49,7 +49,7 @@ async def analyze(request: AnalysisRequest, req: Request):
             ],
             track_pipeline=logger.enabled,
             llm_provider=request.llm_provider or "openrouter",
-            llm_model=request.llm_model or "anthropic/claude-3.5-sonnet",
+            llm_model=request.llm_model or "anthropic/claude-sonnet-4.6",
         )
 
         if logger.enabled:
@@ -96,7 +96,7 @@ async def analyze_file(
     file: UploadFile = File(...),
     new_medications_json: str = Form(...),
     llm_provider: str = Form("openrouter"),
-    llm_model: str = Form("anthropic/claude-3.5-sonnet"),
+    llm_model: str = Form("anthropic/claude-sonnet-4.6"),
     req: Request = None,
 ):
     """Analyse an uploaded anamnesis document."""

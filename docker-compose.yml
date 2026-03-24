@@ -10,7 +10,7 @@ services:
     environment:
       - OPENROUTER_API_KEY=${OPEN_ROUTER_API_KEY}
       - DEFAULT_LLM_PROVIDER=openrouter
-      - LLM_MODEL=anthropic/claude-3.5-sonnet
+      - LLM_MODEL=anthropic/claude-sonnet-4.6
     volumes:
       - ./backend_logs:/app/backend_logs
     restart: unless-stopped

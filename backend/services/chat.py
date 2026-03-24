@@ -54,7 +54,7 @@ def chat_with_analysis(
     patient_info: Dict[str, Any],
     history: List[Dict[str, str]],
     llm_provider: str = "openrouter",
-    llm_model: str = "anthropic/claude-3.5-sonnet",
+    llm_model: str = "anthropic/claude-sonnet-4.6",
 ) -> str:
     """Non-streaming chat (returns full response at once)."""
     try:
@@ -78,7 +78,7 @@ def chat_with_analysis_stream(
     patient_info: Dict[str, Any],
     history: List[Dict[str, str]],
     llm_provider: str = "openrouter",
-    llm_model: str = "anthropic/claude-3.5-sonnet",
+    llm_model: str = "anthropic/claude-sonnet-4.6",
 ):
     """Streaming chat — yields text chunks as they arrive from the LLM."""
     try:

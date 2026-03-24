@@ -8,7 +8,7 @@ from pydantic import BaseModel, Field, field_validator
 
 _ALLOWED_LLM_PROVIDERS = {"openrouter"}
 _ALLOWED_LLM_MODELS = {
-    "anthropic/claude-3.5-sonnet",
+    "anthropic/claude-sonnet-4.6",
 }
 
 
@@ -26,7 +26,7 @@ class AnalysisRequest(BaseModel):
     currentMedications: List[MedicationItem] = Field(default_factory=list, max_length=50)
     newMedications: List[MedicationItem] = Field(default_factory=list, max_length=20)
     llm_provider: Optional[str] = Field(default="openrouter", max_length=20)
-    llm_model: Optional[str] = Field(default="anthropic/claude-3.5-sonnet", max_length=120)
+    llm_model: Optional[str] = Field(default="anthropic/claude-sonnet-4.6", max_length=120)
 
     @field_validator("gender")
     @classmethod
@@ -52,7 +52,7 @@ class AnalysisRequest(BaseModel):
     @field_validator("llm_model")
     @classmethod
     def validate_llm_model(cls, v: Optional[str]) -> str:
-        value = (v or "anthropic/claude-3.5-sonnet").strip()
+        value = (v or "anthropic/claude-sonnet-4.6").strip()
         if value not in _ALLOWED_LLM_MODELS:
             raise ValueError("Geçersiz LLM model")
         return value
@@ -64,7 +64,7 @@ class ChatRequest(BaseModel):
     patient_info: Dict[str, Any] = Field(default_factory=dict)
     history: List[Dict[str, str]] = Field(default_factory=list, max_length=50)
     llm_provider: Optional[str] = Field(default="openrouter", max_length=20)
-    llm_model: Optional[str] = Field(default="anthropic/claude-3.5-sonnet", max_length=120)
+    llm_model: Optional[str] = Field(default="anthropic/claude-sonnet-4.6", max_length=120)
 
     @field_validator("llm_provider")
     @classmethod
@@ -77,7 +77,7 @@ class ChatRequest(BaseModel):
     @field_validator("llm_model")
     @classmethod
     def validate_chat_llm_model(cls, v: Optional[str]) -> str:
-        value = (v or "anthropic/claude-3.5-sonnet").strip()
+        value = (v or "anthropic/claude-sonnet-4.6").strip()
         if value not in _ALLOWED_LLM_MODELS:
             raise ValueError("Geçersiz LLM model")
         return value

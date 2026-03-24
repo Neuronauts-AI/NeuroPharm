@@ -27,7 +27,7 @@ load_env()
 OPENROUTER_API_KEY = (os.getenv("OPENROUTER_API_KEY") or os.getenv("OPEN_ROUTER_API_KEY") or "").strip()
 OPENFDA_BASE_URL = "https://api.fda.gov/drug/label.json"
 DEFAULT_LLM_PROVIDER = os.getenv("DEFAULT_LLM_PROVIDER", "openrouter").strip().lower()
-LLM_MODEL = os.getenv("LLM_MODEL", "anthropic/claude-3.5-sonnet")
+LLM_MODEL = os.getenv("LLM_MODEL", "anthropic/claude-sonnet-4.6")
 
 
 def _build_openrouter_client() -> OpenAI:
