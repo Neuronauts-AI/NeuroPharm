@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import PatientList from '@/components/PatientList';
 import PatientForm from '@/components/PatientForm';
 import PatientDetails from '@/components/PatientDetails';
@@ -13,7 +13,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 import SessionFeedback from '@/components/SessionFeedback';
 
 const FIXED_LLM_PROVIDER: LLMProvider = 'openrouter';
-const FIXED_LLM_MODEL: LLMModel = 'anthropic/claude-sonnet-4.6';
+const DEFAULT_MODEL = 'anthropic/claude-sonnet-4.6';
 
 export default function Home() {
   const [patients, setPatients] = useState<Patient[]>(mockPatients);
@@ -27,7 +27,65 @@ export default function Home() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [showSessionFeedback, setShowSessionFeedback] = useState(false);
   const [currentAnalysisId, setCurrentAnalysisId] = useState<string>('');
+  const [llmModel, setLlmModel] = useState<LLMModel>(DEFAULT_MODEL);
+  const [modelInput, setModelInput] = useState(DEFAULT_MODEL);
+  const [isSavingModel, setIsSavingModel] = useState(false);
   const [feedbackEnabled, setFeedbackEnabled] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadModelPreference = async () => {
+      try {
+        const response = await fetch('/api/model-preference');
+        if (!response.ok) return;
+        const data = await response.json();
+        const loadedModel = String(data?.llm_model || '').trim();
+        if (!loadedModel || !isMounted) return;
+        setLlmModel(loadedModel as LLMModel);
+        setModelInput(loadedModel);
+      } catch (error) {
+        console.error('Model preference load error:', error);
+      }
+    };
+
+    loadModelPreference();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSaveModelPreference = async () => {
+    const nextModel = modelInput.trim();
+    if (!nextModel) {
+      alert('Model adı boş olamaz.');
+      return;
+    }
+
+    setIsSavingModel(true);
+    try {
+      const response = await fetch('/api/model-preference', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ llm_model: nextModel }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data?.detail || data?.error || 'Model kaydedilemedi');
+      }
+
+      const savedModel = String(data?.llm_model || nextModel).trim();
+      setLlmModel(savedModel as LLMModel);
+      setModelInput(savedModel);
+      alert(`Model kaydedildi: ${savedModel}`);
+    } catch (error) {
+      console.error('Model preference save error:', error);
+      alert('Model tercihi kaydedilemedi. Lütfen tekrar deneyin.');
+    } finally {
+      setIsSavingModel(false);
+    }
+  };
 
   // Prefetch helper - FDA verilerini önceden çek
   const prefetchFDAData = async (medications: Medicine[]) => {
@@ -131,7 +189,7 @@ export default function Home() {
           currentMedications: selectedPatient.currentMedications,
           newMedications: selectedMedicines,
           llm_provider: FIXED_LLM_PROVIDER,
-          llm_model: FIXED_LLM_MODEL,
+          llm_model: llmModel,
         }),
       });
 
@@ -220,7 +278,7 @@ export default function Home() {
       formData.append('file', file);
       formData.append('new_medications_json', JSON.stringify(medicines));
       formData.append('llm_provider', FIXED_LLM_PROVIDER);
-      formData.append('llm_model', FIXED_LLM_MODEL);
+      formData.append('llm_model', llmModel);
 
       const response = await fetch('/api/analyze-file', {
         method: 'POST',
@@ -278,7 +336,7 @@ export default function Home() {
           onReplaceWithAlternative={handleReplaceWithAlternative}
           onSavePrescription={handleSavePrescription}
           selectedLLMProvider={FIXED_LLM_PROVIDER}
-          selectedLLMModel={FIXED_LLM_MODEL}
+          selectedLLMModel={llmModel}
         />
       );
     }
@@ -316,7 +374,7 @@ export default function Home() {
             patient={selectedPatient}
             selectedMedicines={selectedMedicines}
             selectedLLMProvider={FIXED_LLM_PROVIDER}
-            selectedLLMModel={FIXED_LLM_MODEL}
+            selectedLLMModel={llmModel}
           />
 
           {analysisResult && selectedMedicines.length > 0 && (
@@ -379,12 +437,66 @@ export default function Home() {
           </div>
 
           <div className="mb-6">
-            <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-4 flex items-center justify-between gap-3">
-              <div>
-                <h3 className="text-sm font-semibold text-[var(--foreground)]">LLM Altyapisi</h3>
-                <p className="text-xs text-[var(--text-muted)]">Sistem OpenRouter uzerinden Claude 3.5 Sonnet ile calisiyor.</p>
+            <div className="bg-[var(--card-bg)] border border-[var(--card-border)] rounded-xl p-4 space-y-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-[var(--foreground)]">LLM Altyapisi</h3>
+                  <p className="text-xs text-[var(--text-muted)]">Model adını girip kaydettiğinizde tüm sistemde aynı model kullanılır.</p>
+                </div>
+                <div className="text-xs text-blue-400 font-medium">openrouter</div>
               </div>
-              <div className="text-xs text-blue-400 font-medium">openrouter / anthropic/claude-sonnet-4.6</div>
+
+              <div className="flex flex-col md:flex-row gap-2">
+                <input
+                  type="text"
+                  value={modelInput}
+                  onChange={(e) => setModelInput(e.target.value)}
+                  placeholder="orn: anthropic/claude-sonnet-4.6"
+                  className="flex-1 px-3 py-2 border border-[var(--input-border)] rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-[var(--input-bg)] text-[var(--foreground)]"
+                />
+                <button
+                  type="button"
+                  onClick={handleSaveModelPreference}
+                  disabled={isSavingModel}
+                  className="px-4 py-2 rounded-md bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  {isSavingModel ? 'Kaydediliyor...' : 'Modeli Kaydet'}
+                </button>
+              </div>
+
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                <p className="text-xs text-[var(--text-muted)]">
+                  Aktif model: <span className="text-blue-400 font-medium">{llmModel}</span>
+                </p>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[var(--text-muted)]">Feedback</span>
+                  <div className="inline-flex rounded-md border border-[var(--card-border)] overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => handleFeedbackToggle(false)}
+                      className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        !feedbackEnabled
+                          ? 'bg-red-500/20 text-red-300'
+                          : 'bg-transparent text-[var(--text-muted)] hover:bg-white/5'
+                      }`}
+                    >
+                      Off
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleFeedbackToggle(true)}
+                      className={`px-3 py-1.5 text-xs font-semibold transition-colors ${
+                        feedbackEnabled
+                          ? 'bg-emerald-500/20 text-emerald-300'
+                          : 'bg-transparent text-[var(--text-muted)] hover:bg-white/5'
+                      }`}
+                    >
+                      On
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 

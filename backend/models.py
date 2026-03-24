@@ -7,9 +7,6 @@ from pydantic import BaseModel, Field, field_validator
 
 
 _ALLOWED_LLM_PROVIDERS = {"openrouter"}
-_ALLOWED_LLM_MODELS = {
-    "anthropic/claude-sonnet-4.6",
-}
 
 
 class MedicationItem(BaseModel):
@@ -53,8 +50,10 @@ class AnalysisRequest(BaseModel):
     @classmethod
     def validate_llm_model(cls, v: Optional[str]) -> str:
         value = (v or "anthropic/claude-sonnet-4.6").strip()
-        if value not in _ALLOWED_LLM_MODELS:
-            raise ValueError("Geçersiz LLM model")
+        if not value:
+            raise ValueError("LLM model boş olamaz")
+        if len(value) > 200:
+            raise ValueError("LLM model çok uzun")
         return value
 
 
@@ -78,8 +77,10 @@ class ChatRequest(BaseModel):
     @classmethod
     def validate_chat_llm_model(cls, v: Optional[str]) -> str:
         value = (v or "anthropic/claude-sonnet-4.6").strip()
-        if value not in _ALLOWED_LLM_MODELS:
-            raise ValueError("Geçersiz LLM model")
+        if not value:
+            raise ValueError("LLM model boş olamaz")
+        if len(value) > 200:
+            raise ValueError("LLM model çok uzun")
         return value
 
 

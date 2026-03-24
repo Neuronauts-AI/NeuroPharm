@@ -8,6 +8,8 @@ from pathlib import Path
 from typing import Optional, Tuple
 from openai import OpenAI
 
+from backend.runtime_model import get_runtime_model
+
 
 def load_env():
     """Load .env file from project root."""
@@ -60,5 +62,6 @@ def resolve_llm_provider(requested_provider: Optional[str]) -> str:
 def get_llm_context(requested_provider: Optional[str], requested_model: Optional[str]) -> Tuple[OpenAI, str, str]:
     """Return (client, provider, model) for a request."""
     provider = resolve_llm_provider(requested_provider)
-    model = (requested_model or LLM_MODEL).strip()
+    base_default = (requested_model or LLM_MODEL).strip() or LLM_MODEL
+    model = get_runtime_model(base_default)
     return _build_openrouter_client(), provider, model

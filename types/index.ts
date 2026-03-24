@@ -35,7 +35,7 @@ export interface AnalysisRequest {
 
 export type LLMProvider = 'openrouter';
 
-export type LLMModel = 'anthropic/claude-sonnet-4.6';
+export type LLMModel = string;
 
 // NEW SCHEMA - Cleaner and more clinical
 
