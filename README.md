@@ -1,6 +1,6 @@
 # Neuropharm: İlaç Etkileşim Analiz Sistemi
 
-Neuropharm, OpenFDA veritabanını ve **Claude Sonnet 4.5** (FAL AI üzerinden) destekli klinik analiz motorunu kullanarak, hasta odaklı ilaç etkileşim analizleri sunan modern bir sağlık teknolojisi çözümüdür. (https://neuropharm.up.railway.app/)Demo
+Neuropharm, OpenFDA veritabanını ve **Claude Sonnet 4.5** (FAL AI üzerinden) destekli klinik analiz motorunu kullanarak, hasta odaklı ilaç etkileşim analizleri sunan modern bir sağlık teknolojisi çözümüdür.Demo Linki: https://neuropharm.up.railway.app/
 
 ## Temel Özellikler
 
