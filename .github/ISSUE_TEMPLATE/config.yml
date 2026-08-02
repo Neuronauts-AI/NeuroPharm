@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Güvenlik açığı bildirimi
+    url: https://github.com/Neuronauts-AI/website/blob/main/SECURITY.md
+    about: Güvenlik açıkları issue olarak açılmaz — SECURITY.md'deki yolu izleyin.
+  - name: GitHub standardı
+    url: https://github.com/Neuronauts-AI/website/tree/main/docs/github-standards
+    about: Depo yapısı, isimlendirme, erişim ve PR kuralları.

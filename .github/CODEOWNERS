@@ -1,0 +1,29 @@
+# CODEOWNERS — Neuronauts AI
+#
+# Burada listelenen takım/kişi, ilgili yola dokunan her PR'a otomatik olarak
+# gözden geçiren atanır. Dal koruması "Require review from Code Owners"
+# işaretliyse, onayı olmadan PR birleşmez.
+#
+# Kural: SON eşleşen satır kazanır. Genelden özele doğru yazın.
+# Erişim rolleri için: docs/github-standards/03-access-control.md
+
+# Varsayılan — depodaki her şey
+*                           @Neuronauts-AI/maintainers
+
+# Standart, güvenlik ve altyapı dosyaları — yalnızca core
+/.github/                   @Neuronauts-AI/core
+/CODEOWNERS                 @Neuronauts-AI/core
+/.github/CODEOWNERS         @Neuronauts-AI/core
+/SECURITY.md                @Neuronauts-AI/core
+/LICENSE                    @Neuronauts-AI/core
+/Dockerfile                 @Neuronauts-AI/core
+/docker-compose.yml         @Neuronauts-AI/core
+/railway.json               @Neuronauts-AI/core
+/.env.example               @Neuronauts-AI/core
+
+# Devir belgesi — sahibi değiştiğinde core görmeli
+/docs/DEVIR.md              @Neuronauts-AI/core
+
+# --- Depoya özel satırları buraya ekleyin -----------------------------------
+# /lib/                     @Neuronauts-AI/engineering
+# /content/                 @kullanici-adi
