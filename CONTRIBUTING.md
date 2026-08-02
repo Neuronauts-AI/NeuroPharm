@@ -1,47 +1,77 @@
-# Katkı Rehberi
+# Katkı Rehberi — Neuropharm
 
-Bu depo [Neuronauts AI GitHub standardını](https://github.com/Neuronauts-AI/website/tree/main/docs/github-standards) izler. Burası yalnızca depoya özel kısımdır; genel kurallar oradadır.
+Bu depo [Neuronauts AI GitHub standardını](https://github.com/Neuronauts-AI/website/tree/main/docs/github-standards) izler. Burada yalnızca bu depoya özel kısımlar var.
 
-## Ortam kurulumu
+## Önce: doğru dal
 
-```bash
-<kurulum komutları>
-```
-
-## Çalıştırma
+Geliştirme **`main`** üzerinde yapılır. Deponun GitHub'daki varsayılan dalı hâlâ `claude/doctor-prescription-panel-DUla2` olduğu için klonladıktan sonra dalı elle değiştirmeniz gerekiyor:
 
 ```bash
-<geliştirme komutu>
+git clone https://github.com/Neuronauts-AI/NeuroPharm.git
+cd NeuroPharm
+git checkout main
 ```
+
+O dal Mart 2026'daki kimlik doğrulama, geri bildirim ve OpenRouter çalışmalarını içermiyor — üzerine geliştirme yapmayın.
+
+## Kurulum
+
+```bash
+export OPEN_ROUTER_API_KEY=sk-or-...
+export APP_LOGIN_PASSWORD=kendi-parolaniz
+docker compose up -d --build
+```
+
+Arayüz <http://localhost:3000>, API dokümanı <http://localhost:8081/docs>.
+
+Docker olmadan:
+
+```bash
+pip install -r requirements.txt
+OPENROUTER_API_KEY=sk-or-... uvicorn backend.main:app --host 0.0.0.0 --port 8081
+
+npm ci
+PYTHON_API_URL=http://localhost:8081 npm run dev
+```
+
+> `backend/main.py` doğrudan `python backend/main.py` ile çalıştırılırsa **8080** portunu açar; geri kalan her şey 8081 bekler. `uvicorn` kullanın veya portu açıkça verin.
 
 ## Test
 
+**Bu depoda otomatik test yok.** Bu bir eksiklik, tercih değil — davranış değiştiren bir PR açıyorsanız ilk testi yazmak için iyi bir fırsat.
+
+Asgari elle doğrulama ve PR'da ne denediğinizin yazılması beklenir:
+
 ```bash
-<test komutu>
+curl -s localhost:8081/health          # openfda_status: healthy, openrouter_configured: true
+curl -s localhost:8081/                # servis bilgisi
 ```
 
-Davranışı değiştiren her PR test getirir. Testi olmayan depoda ilk test bu PR'da yazılır.
+Arayüzde: giriş → hasta seç → ilaç ekle → analiz → sohbet. Hazır senaryolardan biriyle (`/api/analyze/presets`) API anahtarı harcamadan da deneyebilirsiniz.
+
+Lint:
+
+```bash
+npm run lint
+```
+
+## Bu depoya özel dikkat noktaları
+
+- **Klinik çıktı sorumluluk taşır.** Bu bir karar destek aracıdır, tıbbi cihaz değildir. Modelin ürettiği metni kesin bilgi gibi sunan, uyarıyı zayıflatan veya sorumluluk reddini kaldıran değişiklik yapmayın.
+- **Hasta verisi loglara düşebilir.** `backend_logs/` altındaki istek logları ve geri bildirim kayıtları hasta bağlamı içerebilir. Bunları commit etmeyin, issue'ya yapıştırmayın, ekran görüntüsüne almayın.
+- **API anahtarı backend'de kalır.** OpenRouter çağrısını istemci tarafına taşımayın; anahtar tarayıcıya inmemeli.
+- **FDA alanları kırpılır.** `services/openfda.py` içindeki `limit_text_length`, etiket metnini istem sınırına sığdırmak için kısaltır. Sınırı büyütmeden önce maliyeti ve bağlam taşmasını düşünün.
+- **Model tercihi `.env`'e yazılır.** `runtime_model.py` arayüzden yapılan değişikliği diske kaydeder. Konteynerde kalıcı değildir.
+- **Hazır senaryolar gerçek analizlerden üretilmiştir.** `data/precomputed-real-analyses.json` ve `lib/precomputedAnalysisScenarios.ts` birlikte değişir; `scripts/` altındaki üreticilerle yenilenir.
 
 ## Akış
 
-1. `main`'den güncel bir dal aç: `git switch -c feat/kisa-aciklama`
-2. Küçük ve tek işe odaklı commit'ler at — [Conventional Commits](https://www.conventionalcommits.org/)
+1. `git switch -c feat/kisa-aciklama` (`main`'den)
+2. Küçük commit'ler, [Conventional Commits](https://www.conventionalcommits.org/)
 3. PR aç, şablonu doldur
-4. En az 1 onay al
-5. **Squash merge** ile birleştir, dalı sil
-
-Dal ve commit adlandırması: [02-naming.md](https://github.com/Neuronauts-AI/website/blob/main/docs/github-standards/02-naming.md)
+4. 1 onay al
+5. **Squash merge**, sonra dalı sil
 
 ## Depoya girmeyecekler
 
-`.env`, anahtar, parola, kişisel veri, `node_modules/`, `__pycache__/`, derleme çıktısı, `.DS_Store`, `.zip`, `.docx`.
-
-Belge paylaşmanız gerekiyorsa Drive'a koyup `README.md`'ye bağlantı bırakın — ofis dosyaları Git'te sürümlenemez.
-
-## Gözden geçirme
-
-Gözden geçiren doğruluk, kapsam, sır sızıntısı, belge güncelliği ve test'e bakar. Yorum koda yöneliktir ve ne istendiğini açıkça söyler.
-
-## Takıldığınızda
-
-`CODEOWNERS` dosyasında ilgili yolun sahibine sorun, ya da `docs/DEVIR.md` içindeki "Kime sorulur" tablosuna bakın.
+`.env`, OpenRouter anahtarı, giriş parolası, `backend_logs/`, hasta verisi, `node_modules/`, derleme çıktısı.

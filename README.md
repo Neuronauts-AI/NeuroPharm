@@ -1,232 +1,232 @@
-# Neuropharm: İlaç Etkileşim Analiz Sistemi
+# Neuropharm — İlaç Etkileşim Analiz Sistemi
 
-Neuropharm, OpenFDA veritabanını ve **Claude Sonnet 4.5** (FAL AI üzerinden) destekli klinik analiz motorunu kullanarak, hasta odaklı ilaç etkileşim analizleri sunan modern bir sağlık teknolojisi çözümüdür.
+Neuropharm, hekimin reçete yazarken karşılaştığı **ilaç–ilaç** ve **ilaç–hastalık** etkileşimlerini değerlendiren bir klinik karar destek arayüzüdür. Veriyi statik bir tablodan değil, her sorguda **OpenFDA ilaç etiketlerinden** canlı olarak çeker; ham FDA metnini bir dil modeli klinik eczacı bakış açısıyla yorumlayıp Türkçeleştirir ve hastanın yaşı, cinsiyeti ile tanılarına göre risk değerlendirmesi üretir.
 
-## Temel Özellikler
+> ⚠️ **Bu bir klinik karar destek aracıdır, tıbbi cihaz değildir.** Ürettiği değerlendirme hekimin kararının yerine geçmez, onu desteklemek içindir. Çıktı bir dil modelinden gelir ve doğrulanmadan klinik kararda kullanılmamalıdır.
 
-### 1. Güvenilir Veri Kaynağı (OpenFDA - Real-time)
-- **Doğrudan Entegrasyon:** Sistem, statik bir veritabanı yerine, her sorguda doğrudan **fda.gov** API'lerine bağlanarak en güncel veriyi çeker.
-- **Canlı Veri:** İlaç etiketleri, güncel kara kutu uyarıları ve kontrendikasyonlar anlık olarak sorgulanır.
-- **Önbellekleme (Prefetch):** Hasta seçimi ve ilaç ekleme anında FDA verileri arka planda önceden çekilerek analiz süresi kısaltılır.
+**Demo:** <https://neuropharm.up.railway.app/> — parola korumalıdır (bkz. [Güvenlik](#güvenlik))
+**Yığın:** Next.js 16 · React 19 · TypeScript · Tailwind CSS 4 — FastAPI · Python 3.13 — OpenRouter → Claude — OpenFDA
+**Durum:** demo yayında · otomatik test ve CI yok
+**Düzen:** uygulama — bkz. [org GitHub standardı](https://github.com/Neuronauts-AI/website/blob/main/docs/github-standards/01-repo-structure.md)
 
-### 2. Klinik AI Ajanı (Claude Sonnet 4.5)
-- **Model:** FAL AI OpenRouter proxy üzerinden **Anthropic Claude Sonnet 4.5** modeli kullanılır.
-- **Rolü:** OpenFDA'dan çekilen ham klinik veriyi, bir klinik eczacı bakış açısıyla analiz eder, özetler ve Türkçeleştirir.
-- **Yeteneği:** Sadece veri listelemez; hastanın yaşına, cinsiyetine ve hastalıklarına göre risk değerlendirmesi yapar.
-
-### 3. Hasta Odaklı Analiz (Doktor Reçete Paneli)
-- **Hasta Yönetimi:** Hasta ekleme, düzenleme ve seçme işlemleri.
-- **Reçete Kaydetme:** Analiz sonrası ilaçlar hastanın profiline kaydedilebilir.
-- **İlaç Alternatifleri:** AI, riskli ilaçlara güvenli alternatif önerir ve tek tıkla değiştirme imkânı sunar.
-- **Özel Popülasyon Analizi:** Geriatrik (65+), Pediatrik ve Hamilelik durumlarına özel risk taraması.
-- **Hastalık Çapraz Sorgusu:** Mevcut hastalıklar ile ilaç kontrendikasyonlarının eşleştirilmesi.
-
-### 4. Anamnez Belgesi Analizi
-- PDF, DOCX veya TXT formatındaki hasta anamnez belgelerini yükleyerek otomatik hasta bilgisi çıkarımı ve ilaç etkileşim analizi yapılabilir.
-
-### 5. Yapay Zeka Sohbet Arayüzü
-- Analiz sonuçları hakkında AI ile gerçek zamanlı (streaming) sohbet imkânı.
-
-### 6. Koyu/Açık Tema
-- Kullanıcı tercihi için dark/light mod desteği.
+> **Hangi dal doğru?** Bu deponun kaynağı `main` dalıdır. Deponun GitHub'daki *varsayılan* dalı yanlışlıkla `claude/doctor-prescription-panel-DUla2` olarak kalmış; o dal Mart 2026'daki geliştirmeleri (kimlik doğrulama, geri bildirim sistemi, OpenRouter geçişi, model tercihi) **içermiyor**. Bkz. [Bilinen sorunlar](#bilinen-sorunlar).
 
 ---
 
-## Sistem Mimarisi
+## Ne yapar
 
-Sistem, tek bir Docker container içinde çalışan **hibrit** bir mimariye sahiptir:
+| Yetenek | Açıklama |
+|---|---|
+| **Canlı FDA verisi** | Her analizde `api.fda.gov/drug/label.json` sorgulanır: etkileşimler, kontrendikasyonlar, kara kutu uyarıları, dozaj, geriatrik/pediatrik/gebelik notları |
+| **Önbellek + prefetch** | İlaç seçilir seçilmez FDA verisi arka planda çekilip bellekte tutulur, böylece analiz anında beklenmez |
+| **Klinik AI değerlendirmesi** | Ham etiket metni, yapılandırılmış Türkçe bir klinik değerlendirmeye dönüştürülür: özet, etkileşim listesi, alternatif ilaçlar, izlem planı, dozaj uyarıları |
+| **Hasta yönetimi** | Hasta ekleme/düzenleme, mevcut ilaç listesi, tanılar; analiz sonrası reçete kaydı |
+| **Özel popülasyon taraması** | Geriatrik (65+), pediatrik ve gebelik durumlarına özel risk kontrolü |
+| **Anamnez belgesi analizi** | PDF, DOCX veya TXT yüklenir; hasta bilgisi metinden çıkarılıp analiz çalıştırılır |
+| **AI sohbet** | Analiz sonucu bağlamında, akış (streaming) destekli soru-cevap |
+| **Hazır senaryolar** | Gerçek analizlerden üretilmiş **10 hazır vaka**, API anahtarı harcamadan demo yapmayı sağlar |
+| **Klinik geri bildirim** | Hekimden etkileşim bazlı ve oturum bazlı geri bildirim toplayan iki katmanlı sistem; klinik doğrulama verisi biriktirir |
+| **Model tercihi** | Kullanılan OpenRouter modeli arayüzden değiştirilip kalıcı hâle getirilebilir |
+| **Koyu/açık tema** | |
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   Docker Container                   │
-│                                                      │
-│  ┌─────────────────┐      ┌─────────────────────┐   │
-│  │  Next.js 16     │      │  FastAPI (uvicorn)  │   │
-│  │  Port: 3000     │◄────►│  Port: 8081         │   │
-│  └─────────────────┘      └────────┬────────────┘   │
-└──────────────────────────────────┬─┼────────────────┘
-                                   │ │
-                    ┌──────────────┘ └──────────────┐
-                    ▼                               ▼
-           ┌────────────────┐            ┌─────────────────┐
-           │ OpenFDA API    │            │ FAL AI Proxy    │
-           │ api.fda.gov    │            │ Claude Sonnet   │
-           └────────────────┘            └─────────────────┘
-```
-
-### Analiz Akışı
-
-1. **Prefetch:** Hasta seçimi/ilaç ekleme anında OpenFDA'dan veri arka planda çekilip önbelleğe alınır.
-2. **Analiz İsteği:** Frontend, Next.js API route üzerinden FastAPI backend'e POST isteği gönderir.
-3. **Veri Toplama:** Backend, ilaç isimlerini OpenFDA API'de arar; etiket bilgilerini (uyarılar, etkileşimler, dozaj) çeker.
-4. **AI Analizi:** Ham veri, özel sistem promptu ile Claude Sonnet 4.5 modeline gönderilir.
-5. **Sonuç:** AI, klinik değerlendirmeyi yapılandırılmış Türkçe JSON formatında döner.
+Yerel ilaç arama dizini `public/data/optimized_medicines.json` içinde **18.677 kayıt** taşır; arama bu dosyadan yapılır, FDA sorgusu yalnızca analiz anında atılır.
 
 ---
 
-## Kurulum ve Çalıştırma
+## Mimari
 
-Proje Docker ile tek komutla ayağa kaldırılabilir.
+Tek bir Docker imajında iki süreç çalışır: Next.js (3000) ve FastAPI (8081). Tarayıcı yalnızca Next.js ile konuşur; Next.js API route'ları isteği FastAPI'ye geçirir. FDA ve OpenRouter'a **yalnızca backend** çıkar — anahtar tarayıcıya hiç inmez.
+
+```
+┌──────────────── Docker container ─────────────────┐
+│                                                    │
+│   Next.js 16  :3000  ──proxy──▶  FastAPI  :8081    │
+│   (app/api/*)                    (backend/)        │
+└──────────────────────────────────────┬─────────────┘
+                        ┌──────────────┴──────────────┐
+                        ▼                             ▼
+             api.fda.gov/drug/label.json    openrouter.ai/api/v1
+             (ilaç etiketleri)              (anthropic/claude-sonnet-4.6)
+```
+
+### Analiz akışı
+
+1. **Prefetch** — hasta/ilaç seçildiğinde FDA verisi arka planda çekilip `FDA_DATA_CACHE`'e alınır
+2. **İstek** — tarayıcı → Next.js `/api/analyze` → FastAPI `POST /analyze`
+3. **Veri toplama** — her ilaç için OpenFDA etiketi alınır, uzun alanlar kırpılır (istem sınırını taşırmamak için)
+4. **Değerlendirme** — ham veri + hasta bağlamı, klinik sistem istemiyle OpenRouter üzerinden modele gönderilir
+5. **Sonuç** — model yapılandırılmış Türkçe JSON döner; arayüz bunu bölümlere ayırıp gösterir
+
+---
+
+## Kurulum
 
 ### Gereksinimler
-- Docker & Docker Compose
-- FAL AI API Anahtarı ([fal.ai](https://fal.ai) üzerinden)
 
-### Hızlı Başlangıç
+- Docker ve Docker Compose
+- **OpenRouter API anahtarı** — <https://openrouter.ai>
 
-1. **Projeyi Klonlayın**
-   ```bash
-   git clone https://github.com/egeaydin1/druginteraction.git
-   cd druginteraction
-   ```
+### Docker ile (önerilen)
 
-2. **Ortam Değişkenlerini Ayarlayın**
-   Proje kökünde `.env` dosyası oluşturun:
-   ```bash
-   FAL_KEY=your_fal_api_key_here
-   ```
+```bash
+git clone https://github.com/Neuronauts-AI/NeuroPharm.git
+cd NeuroPharm
+git checkout main          # varsayılan dal henüz main değil — bkz. Bilinen sorunlar
 
-3. **Uygulamayı Başlatın**
-   ```bash
-   docker-compose up -d --build
-   ```
+export OPEN_ROUTER_API_KEY=sk-or-...   # dikkat: compose bu ismi okur
+export APP_LOGIN_PASSWORD=...          # kendi parolanızı belirleyin
 
-4. **Erişim**
-   - **Frontend (Doktor Paneli):** [http://localhost:3000](http://localhost:3000)
-   - **Backend API Docs:** [http://localhost:8081/docs](http://localhost:8081/docs)
+docker compose up -d --build
+```
+
+- Arayüz: <http://localhost:3000>
+- API dokümantasyonu (FastAPI otomatik): <http://localhost:8081/docs>
+
+### Docker olmadan
+
+```bash
+# Backend
+pip install -r requirements.txt
+OPENROUTER_API_KEY=sk-or-... uvicorn backend.main:app --host 0.0.0.0 --port 8081
+
+# Frontend (ayrı terminal)
+npm ci
+PYTHON_API_URL=http://localhost:8081 npm run dev
+```
 
 ---
 
-## API Referansı
+## Ortam değişkenleri
+
+| Değişken | Zorunlu | Ne işe yarar |
+|---|---|---|
+| `OPENROUTER_API_KEY` | **evet** | OpenRouter anahtarı. `OPEN_ROUTER_API_KEY` de kabul edilir. Yoksa backend açılışta hata verir |
+| `APP_LOGIN_PASSWORD` | **evet (üretimde)** | Giriş parolası. **Ayarlanmazsa kodda gömülü bir varsayılana düşer** — üretimde mutlaka ayarlayın |
+| `LLM_MODEL` | hayır | Varsayılan `anthropic/claude-sonnet-4.6`. Çalışma anında arayüzden de değiştirilebilir |
+| `DEFAULT_LLM_PROVIDER` | hayır | Varsayılan `openrouter`. Şu an **tek desteklenen sağlayıcı** budur; başka değer verilse de openrouter'a düşülür |
+| `PYTHON_API_URL` | hayır | Next.js'in backend'i bulduğu adres. Docker'da `http://localhost:8081` |
+| `NODE_ENV` | hayır | `production` olduğunda oturum çerezi `secure` işaretlenir |
+
+> `docker-compose.yml`, konteynere `OPENROUTER_API_KEY` değişkenini **host'taki `OPEN_ROUTER_API_KEY`** değişkeninden doldurur. Docker Compose kullanıyorsanız host tarafında bu ismi kullanın.
+
+---
+
+## API
+
+FastAPI, `:8081` üzerinde. Next.js tarafındaki `/api/*` route'ları bunların önünde ince birer vekildir.
+
+| Uç nokta | Ne yapar |
+|---|---|
+| `GET /` | Servis bilgisi |
+| `GET /health` | Sağlık kontrolü — OpenFDA erişimi ve anahtarın tanımlı olup olmadığı |
+| `POST /analyze` | Hasta bilgisi + ilaç listeleriyle etkileşim analizi |
+| `POST /analyze/file` | Anamnez belgesi (PDF/DOCX/TXT, **maks. 10 MB**) yükleyerek analiz |
+| `POST /chat` | Analiz bağlamında soru-cevap |
+| `POST /chat/stream` | Aynısı, `text/plain` akışı olarak |
+| `POST /prefetch` | Verilen ilaçların FDA verisini önden önbelleğe alır |
+| `POST /feedback/quick` | Etkileşim bazlı hızlı geri bildirim |
+| `POST /feedback/session` | Oturum bazlı geri bildirim (karar etkisi, puanlar, NPS) |
+| `GET /feedback/stats` | Toplu klinik metrikler |
+| `GET /feedback/list` | Ham geri bildirim kayıtları (filtrelenebilir) |
+| `GET /feedback/export` | Araştırma için tam dışa aktarım |
+| `GET /settings/model` | Geçerli model tercihi |
+| `POST /settings/model` | Model tercihini değiştirir ve kalıcılaştırır |
+
+Tüm istekler için gövde sınırı **15 MB**'tır.
 
 ### `POST /analyze`
-Manuel hasta bilgisi ile ilaç etkileşim analizi.
 
-**İstek:**
 ```json
 {
-  "age": 65,
+  "age": 58,
   "gender": "male",
-  "conditions": ["Hipertansiyon"],
+  "conditions": ["kalp hastalığı", "yüksek kolesterol"],
   "currentMedications": [
-    {"id": "1", "name": "Lisinopril", "dosage": "10mg"}
+    {"id": "1", "name": "aspirin", "dosage": "100mg"},
+    {"id": "2", "name": "atorvastatin", "dosage": "20mg"}
   ],
   "newMedications": [
-    {"id": "2", "name": "Ibuprofen", "dosage": "400mg"}
+    {"id": "3", "name": "warfarin", "dosage": "5mg"}
   ]
 }
 ```
 
-**Yanıt:**
-```json
-{
-  "results_found": true,
-  "clinical_summary": "Lisinopril ve Ibuprofen birlikte kullanıldığında...",
-  "interaction_details": [...],
-  "alternatives": [...],
-  "monitoring_plan": [...],
-  "dosage_warnings": [...],
-  "special_population_alerts": [...],
-  "patient_safety_notes": {...},
-  "last_updated": "15.01.2025"
-}
-```
-
----
+Yanıt; `clinical_summary`, `interaction_details`, `alternatives`, `monitoring_plan`, `dosage_warnings`, `special_population_alerts` ve `patient_safety_notes` alanlarını taşır.
 
 ### `POST /analyze/file`
-Anamnez belgesi yükleyerek analiz (PDF, DOCX, TXT — maks. 10 MB).
 
 ```bash
 curl -X POST http://localhost:8081/analyze/file \
   -F "file=@anamnez.pdf" \
-  -F 'new_medications_json=[{"id":"1","name":"Metformin","dosage":"500mg"}]'
+  -F 'new_medications_json=[{"id":"1","name":"metformin","dosage":"500mg"}]'
 ```
 
 ---
 
-### `POST /chat` ve `POST /chat/stream`
-Analiz sonucu bağlamında AI ile sohbet.
+## Güvenlik
 
-```json
-{
-  "message": "Bu ilaçların yan etkileri nelerdir?",
-  "context": "<analiz sonucu metni>",
-  "patient_info": {"age": 65, "gender": "male"},
-  "history": []
-}
-```
-
-`/chat/stream` uç noktası `text/plain` akışı döner.
+- **Tüm uygulama parola arkasındadır.** `middleware.ts`, `/login` ve `/api/auth/*` dışındaki her yolu giriş sayfasına yönlendirir. Başarılı girişte 12 saat ömürlü, `httpOnly` bir `np_auth` çerezi yazılır.
+- **`APP_LOGIN_PASSWORD` üretimde mutlaka ayarlanmalıdır.** Ayarlanmazsa kod içine gömülü bir varsayılan parolaya düşülür; bu depo public olduğu için o varsayılan herkes tarafından okunabilir durumdadır.
+- Parola **tek ve paylaşılan** bir sırdır; kullanıcı bazlı kimlik veya yetki ayrımı yoktur. Kimin ne yaptığı ayırt edilemez.
+- `backend_logs/` altındaki istek logları ve geri bildirim kayıtları **hasta bağlamı içerebilir**. `/logs` sayfası ve `/api/logs` uçları bunları aynı paylaşılan parolanın arkasından sunar. Gerçek hasta verisiyle çalışılacaksa bu yüzey daraltılmalıdır.
+- API anahtarı yalnızca backend'de kullanılır, tarayıcıya gönderilmez.
+- Açık bildirimi için: [`SECURITY.md`](SECURITY.md)
 
 ---
 
-### `POST /prefetch`
-FDA verilerini önceden önbelleğe alarak analiz süresini kısaltır.
-
-```json
-{
-  "medications": ["Lisinopril", "Ibuprofen"]
-}
-```
-
----
-
-### `GET /health`
-Servis durumu kontrolü.
-
----
-
-## Proje Yapısı
+## Yerleşim
 
 ```
-druginteraction/
-├── app/                    # Next.js app router
-│   ├── api/                # API proxy routes (Next.js → FastAPI)
-│   └── page.tsx            # Ana sayfa (Doktor Reçete Paneli)
-├── backend/                # FastAPI backend
-│   ├── routes/             # Endpoint tanımları
-│   │   ├── analyze.py      # /analyze ve /analyze/file
-│   │   ├── chat.py         # /chat ve /chat/stream
-│   │   ├── prefetch.py     # /prefetch
-│   │   └── health.py       # /health
-│   ├── services/           # İş mantığı katmanı
-│   │   ├── llm.py          # Claude Sonnet 4.5 entegrasyonu
-│   │   ├── openfda.py      # OpenFDA API istemcisi
-│   │   ├── anamnesis.py    # Belge okuma ve hasta bilgisi çıkarımı
-│   │   └── chat.py         # Sohbet servisi
-│   ├── config.py           # FAL AI istemci yapılandırması
-│   ├── models.py           # Pydantic modelleri
-│   └── logger.py           # İstek loglama sistemi
-├── components/             # React bileşenleri
-│   ├── PatientList.tsx     # Hasta listesi paneli
-│   ├── PatientForm.tsx     # Hasta ekleme/düzenleme formu
-│   ├── PatientDetails.tsx  # Hasta detay görünümü
-│   ├── MedicineSearch.tsx  # İlaç arama ve seçimi
-│   ├── AnalysisResult.tsx  # Analiz sonuç ekranı
-│   ├── AnamnesisPanel.tsx  # Anamnez belgesi paneli
-│   ├── AnalysisChat.tsx    # AI sohbet arayüzü
-│   └── ThemeToggle.tsx     # Tema değiştirici
-├── Dockerfile              # Çok aşamalı build (Node.js + Python)
-├── docker-compose.yml      # Tek container deployment
-├── start.sh                # uvicorn + Next.js başlatma scripti
-└── requirements.txt        # Python bağımlılıkları
+app/                         Next.js App Router
+  page.tsx                   doktor reçete paneli (ana ekran)
+  login/page.tsx             parola ekranı
+  feedback/page.tsx          klinik geri bildirim paneli
+  logs/page.tsx              istek log görüntüleyici
+  api/                       FastAPI'ye vekillik eden route'lar
+backend/
+  main.py                    FastAPI uygulaması, CORS, boyut sınırı, log ara katmanı
+  config.py                  OpenRouter istemcisi, model ve anahtar çözümlemesi
+  runtime_model.py           model tercihinin kalıcılaştırılması
+  models.py                  Pydantic istek/yanıt modelleri
+  logger.py                  istek loglama
+  routes/                    analyze · chat · prefetch · health · feedback · model_settings
+  services/
+    openfda.py               OpenFDA istemcisi + bellek içi önbellek
+    llm.py                   klinik sistem istemi ve model çağrısı
+    anamnesis.py             PDF/DOCX/TXT okuma, hasta bilgisi çıkarımı
+    chat.py                  sohbet servisi
+components/                  React bileşenleri (hasta listesi, ilaç arama, sonuç, sohbet, geri bildirim)
+lib/
+  precomputedAnalysisScenarios.ts   10 hazır senaryonun imzaları
+  mockData.ts
+data/precomputed-real-analyses.json   gerçek analizlerden üretilmiş hazır sonuçlar
+public/data/optimized_medicines.json  18.677 kayıtlık yerel ilaç arama dizini
+scripts/                     hazır senaryoları üreten yardımcı betikler
+Dockerfile                   çok aşamalı build (node:20-alpine → python:3.13-slim)
+start.sh                     tek konteynerde uvicorn + Next.js
 ```
 
 ---
 
-## Teknoloji Yığını
+## Bilinen sorunlar
 
-| Katman | Teknoloji |
-|---|---|
-| Frontend | Next.js 16, React 19, Tailwind CSS 4, TypeScript |
-| Backend | Python 3.13, FastAPI, Uvicorn |
-| AI Model | Anthropic Claude Sonnet 4.5 (FAL AI proxy) |
-| Veri Kaynağı | OpenFDA API (api.fda.gov) |
-| Containerization | Docker (çok aşamalı build) |
+- **Varsayılan dal yanlış.** Depo `claude/doctor-prescription-panel-DUla2` dalını varsayılan gösteriyor; oysa geliştirme `main` üzerinde. O dal Mart 2026'daki kimlik doğrulama, geri bildirim sistemi, OpenRouter geçişi ve model tercihi çalışmalarını içermiyor. Klonlayan herkes eksik kodu alıyor. Düzeltmesi tek komut:
+  ```bash
+  gh api repos/Neuronauts-AI/NeuroPharm -X PATCH -f default_branch=main
+  ```
+- **`.env.example` güncel değil.** İçinde `FAL_KEY` yazıyor, ama kod artık `OPENROUTER_API_KEY` / `OPEN_ROUTER_API_KEY` okuyor. `FAL_KEY` ayarlamak hiçbir işe yaramaz; dosya bu README'deki tabloya göre yenilenmeli.
+- **`backend/main.py` doğrudan çalıştırılırsa 8080 portunu açar**, oysa `start.sh`, `docker-compose.yml` ve `Dockerfile` 8081 kullanıyor. `uvicorn` ile elle başlatırken portu açıkça verin.
+- **Model tercihi `.env` dosyasına yazılır.** `runtime_model.py`, arayüzden yapılan model değişikliğini hem `data/runtime-model.json` hem `.env` içine kaydeder. Konteynerde bu dosya kalıcı değildir — yeniden dağıtımda tercih `LLM_MODEL` değerine döner.
+- **CORS her kaynağa açık.** `allow_origins=["*"]` ile `allow_credentials=True` birlikte kullanılıyor. Backend doğrudan internete açılacaksa daraltılmalı.
+- **Otomatik test ve CI yok.** Değişiklikler yalnızca elle doğrulanıyor.
+- Hasta kayıtları ve sohbet geçmişi için veritabanı yok; kalıcılık `backend_logs/` altındaki dosyalara ve tarayıcı durumuna dayanıyor.
 
 ---
+
+## Katkı
+
+[`CONTRIBUTING.md`](CONTRIBUTING.md) · Dal, commit ve PR kuralları için [org standardı](https://github.com/Neuronauts-AI/website/blob/main/docs/github-standards/04-branching-and-prs.md).
 
 ## Lisans
 
-Bu proje **Apache License 2.0** ile lisanslanmıştır. Detaylar için [LICENSE](LICENSE) dosyasına bakınız.
+**Apache License 2.0** — bkz. [`LICENSE`](LICENSE). Depo public olduğu için bu lisans, kodun üçüncü taraflarca serbestçe kullanılıp ticarileştirilebileceği anlamına gelir.
