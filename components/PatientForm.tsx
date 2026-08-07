@@ -56,10 +56,11 @@ export default function PatientForm({ patient, onSave, onCancel }: PatientFormPr
         currentMedications: [
           ...formData.currentMedications,
           {
-            id: Date.now().toString(),
+            id: `manual-${Date.now()}`,
             name: medicationInput.name.trim(),
             dosage: medicationInput.dosage.trim(),
             frequency: medicationInput.frequency.trim(),
+            isManual: true,
           },
         ],
       });

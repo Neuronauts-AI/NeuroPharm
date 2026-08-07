@@ -8,7 +8,10 @@ services:
       - "3000:3000"
       - "8081:8081"
     environment:
-      - FAL_KEY=${FAL_KEY}
+      # OpenRouter anahtarı (FAL_KEY de desteklenir — geriye dönük uyumluluk)
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+      - FAL_KEY=${FAL_KEY:-}
+      - LLM_MODEL=${LLM_MODEL:-anthropic/claude-sonnet-4.6}
     volumes:
       - ./backend_logs:/app/backend_logs
     restart: unless-stopped

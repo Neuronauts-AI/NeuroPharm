@@ -40,11 +40,23 @@ async def analyze(request: AnalysisRequest, req: Request):
             gender=request.gender,
             conditions=request.conditions,
             current_medications=[
-                {"name": med.name, "dosage": med.dosage or "N/A"}
+                {
+                    "name": med.name,
+                    "dosage": med.dosage or "N/A",
+                    "frequency": med.frequency or "N/A",
+                    "notes": med.notes,
+                    "is_manual": med.isManual,
+                }
                 for med in request.currentMedications
             ],
             new_medications=[
-                {"name": med.name, "dosage": med.dosage or "N/A"}
+                {
+                    "name": med.name,
+                    "dosage": med.dosage or "N/A",
+                    "frequency": med.frequency or "N/A",
+                    "notes": med.notes,
+                    "is_manual": med.isManual,
+                }
                 for med in request.newMedications
             ],
             track_pipeline=logger.enabled,

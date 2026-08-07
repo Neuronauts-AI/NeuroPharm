@@ -13,6 +13,10 @@ export interface Medicine {
   name: string;
   dosage?: string;
   frequency?: string;
+  /** Doktorun elle girdiği ilaçlar için serbest metin not */
+  notes?: string;
+  /** true ise ilaç sistemde kayıtlı listeden değil, elle yazılarak eklendi */
+  isManual?: boolean;
 }
 
 export interface Prescription {

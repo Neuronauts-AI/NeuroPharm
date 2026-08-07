@@ -3,7 +3,12 @@
 import httpx
 from fastapi import APIRouter
 
-from backend.config import FAL_KEY, OPENFDA_BASE_URL
+from backend.config import (
+    LLM_CONFIGURED,
+    LLM_MODEL,
+    LLM_PROVIDER,
+    OPENFDA_BASE_URL,
+)
 from backend.logger import get_logger
 
 router = APIRouter()
@@ -34,8 +39,11 @@ async def health():
         openfda_status = "offline"
 
     return {
-        "status": "healthy" if openfda_status == "healthy" else "degraded",
-        "fal_configured": FAL_KEY is not None,
+        "status": "healthy" if openfda_status == "healthy" and LLM_CONFIGURED else "degraded",
+        "llm_provider": LLM_PROVIDER,
+        "llm_model": LLM_MODEL,
+        "llm_configured": LLM_CONFIGURED,
+        "fal_configured": LLM_CONFIGURED,  # legacy alias for llm_configured
         "openfda_status": openfda_status,
         "data_source": "OpenFDA API",
         "logging_enabled": logger.enabled,
