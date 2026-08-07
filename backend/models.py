@@ -11,6 +11,10 @@ class MedicationItem(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     dosage: Optional[str] = Field(None, max_length=200)
     frequency: Optional[str] = Field(None, max_length=200)
+    # Free-text note the doctor typed for a manually entered medication
+    notes: Optional[str] = Field(None, max_length=1000)
+    # True when the drug was typed by hand instead of picked from the catalogue
+    isManual: bool = False
 
 
 class AnalysisRequest(BaseModel):

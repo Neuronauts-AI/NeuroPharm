@@ -21,6 +21,8 @@ ANALYSIS PRINCIPLES:
 2. Clinical Summary: HIGH-LEVEL overview ONLY. No specific dosage numbers or granular side effect lists here.
 3. Dosage Warnings: The ONLY place for dosage adjustments and specific dosage limits.
 4. Patient Safety: The ONLY place for side effects and red flags.
+5. MANUALLY ENTERED DRUGS: The input may contain a "doctor_manual_entries" list. These drugs were typed by hand by the doctor (local brand names, non-US products, compounded preparations) and often have NO OpenFDA record ("found": false). Identify the active ingredient from your own pharmacological knowledge and evaluate them exactly like the others. NEVER skip a drug just because OpenFDA has no data for it - instead, state briefly in clinical_summary that the evaluation for that drug relies on general pharmacological knowledge rather than FDA label data.
+6. DOCTOR NOTES: If a manual entry has "doctor_notes", treat it as clinical context and factor it into the evaluation.
 
 OUTPUT FORMAT - Return this exact JSON structure in Turkish:
 {
@@ -143,6 +145,32 @@ Focus on:
 # ──────────────────── main pipeline ────────────────────
 
 
+def _collect_manual_entries(medications: List[Dict], kind: str) -> List[Dict[str, Any]]:
+    """Pick out hand-typed medications (and any doctor notes) for the LLM payload."""
+    entries: List[Dict[str, Any]] = []
+
+    for med in medications:
+        name = (med.get("name") or "").strip()
+        if not name:
+            continue
+
+        is_manual = bool(med.get("is_manual") or med.get("isManual"))
+        notes = (med.get("notes") or "").strip()
+        if not is_manual and not notes:
+            continue
+
+        entries.append({
+            "name": name,
+            "type": kind,
+            "dosage": med.get("dosage") or "N/A",
+            "frequency": med.get("frequency") or "N/A",
+            "doctor_notes": notes or None,
+            "manually_entered": is_manual,
+        })
+
+    return entries
+
+
 def _extract_latest_date(openfda_data: Dict[str, Any]) -> str:
     """Extract the latest update date from OpenFDA data."""
     latest_date = "01.01.2024"  # default
@@ -220,6 +248,16 @@ def analyze_with_openai_agent(
 
     step1_ms = (time.time() - t0) * 1000
 
+    # Hand-typed drugs usually have no OpenFDA record — surface them explicitly
+    # so the LLM evaluates them from pharmacological knowledge instead of skipping them.
+    manual_entries = (
+        _collect_manual_entries(current_medications, "current")
+        + _collect_manual_entries(new_medications, "new")
+    )
+    if manual_entries:
+        openfda_data["doctor_manual_entries"] = manual_entries
+        print(f"✍️  {len(manual_entries)} manually entered medication(s) included in the analysis")
+
     if track_pipeline:
         pipeline_steps.append({
             "step": 1,
@@ -246,6 +284,7 @@ def analyze_with_openai_agent(
             "patient_info": openfda_data.get("patient_info", {}),
             "current_medications": openfda_data.get("current_medications", []),
             "new_medications": openfda_data.get("new_medications", []),
+            "doctor_manual_entries": openfda_data.get("doctor_manual_entries", []),
             "openfda_data_summary": {
                 "total_drugs": len(openfda_data.get("openfda_data", [])),
                 "drugs": [

@@ -1,6 +1,6 @@
 # Neuropharm: İlaç Etkileşim Analiz Sistemi
 
-Neuropharm, OpenFDA veritabanını ve **Claude Sonnet 4.5** (FAL AI üzerinden) destekli klinik analiz motorunu kullanarak, hasta odaklı ilaç etkileşim analizleri sunan modern bir sağlık teknolojisi çözümüdür.Demo Linki: https://neuropharm.up.railway.app/
+Neuropharm, OpenFDA veritabanını ve **Claude Sonnet** (OpenRouter üzerinden) destekli klinik analiz motorunu kullanarak, hasta odaklı ilaç etkileşim analizleri sunan modern bir sağlık teknolojisi çözümüdür.Demo Linki: https://neuropharm.up.railway.app/
 
 ## Temel Özellikler
 
@@ -9,13 +9,14 @@ Neuropharm, OpenFDA veritabanını ve **Claude Sonnet 4.5** (FAL AI üzerinden) 
 - **Canlı Veri:** İlaç etiketleri, güncel kara kutu uyarıları ve kontrendikasyonlar anlık olarak sorgulanır.
 - **Önbellekleme (Prefetch):** Hasta seçimi ve ilaç ekleme anında FDA verileri arka planda önceden çekilerek analiz süresi kısaltılır.
 
-### 2. Klinik AI Ajanı (Claude Sonnet 4.5)
-- **Model:** FAL AI OpenRouter proxy üzerinden **Anthropic Claude Sonnet 4.5** modeli kullanılır.
+### 2. Klinik AI Ajanı (Claude Sonnet)
+- **Model:** **OpenRouter** üzerinden **Anthropic Claude Sonnet** modeli kullanılır (`LLM_MODEL` ile değiştirilebilir).
 - **Rolü:** OpenFDA'dan çekilen ham klinik veriyi, bir klinik eczacı bakış açısıyla analiz eder, özetler ve Türkçeleştirir.
 - **Yeteneği:** Sadece veri listelemez; hastanın yaşına, cinsiyetine ve hastalıklarına göre risk değerlendirmesi yapar.
 
 ### 3. Hasta Odaklı Analiz (Doktor Reçete Paneli)
 - **Hasta Yönetimi:** Hasta ekleme, düzenleme ve seçme işlemleri.
+- **Manuel İlaç Girişi:** Doktor, sistemde kayıtlı olmayan ilaçları (yerel marka, majistral, yurt dışı ilaçlar) ad, doz, kullanım sıklığı ve serbest metin notuyla elle reçeteye ekleyebilir. Bu ilaçlar OpenFDA'da bulunamasa bile AI değerlendirmesine dâhil edilir.
 - **Reçete Kaydetme:** Analiz sonrası ilaçlar hastanın profiline kaydedilebilir.
 - **İlaç Alternatifleri:** AI, riskli ilaçlara güvenli alternatif önerir ve tek tıkla değiştirme imkânı sunar.
 - **Özel Popülasyon Analizi:** Geriatrik (65+), Pediatrik ve Hamilelik durumlarına özel risk taraması.
@@ -49,7 +50,7 @@ Sistem, tek bir Docker container içinde çalışan **hibrit** bir mimariye sahi
                     ┌──────────────┘ └──────────────┐
                     ▼                               ▼
            ┌────────────────┐            ┌─────────────────┐
-           │ OpenFDA API    │            │ FAL AI Proxy    │
+           │ OpenFDA API    │            │ OpenRouter      │
            │ api.fda.gov    │            │ Claude Sonnet   │
            └────────────────┘            └─────────────────┘
 ```
@@ -59,7 +60,7 @@ Sistem, tek bir Docker container içinde çalışan **hibrit** bir mimariye sahi
 1. **Prefetch:** Hasta seçimi/ilaç ekleme anında OpenFDA'dan veri arka planda çekilip önbelleğe alınır.
 2. **Analiz İsteği:** Frontend, Next.js API route üzerinden FastAPI backend'e POST isteği gönderir.
 3. **Veri Toplama:** Backend, ilaç isimlerini OpenFDA API'de arar; etiket bilgilerini (uyarılar, etkileşimler, dozaj) çeker.
-4. **AI Analizi:** Ham veri, özel sistem promptu ile Claude Sonnet 4.5 modeline gönderilir.
+4. **AI Analizi:** Ham veri, özel sistem promptu ile OpenRouter üzerinden Claude Sonnet modeline gönderilir.
 5. **Sonuç:** AI, klinik değerlendirmeyi yapılandırılmış Türkçe JSON formatında döner.
 
 ---
@@ -70,7 +71,7 @@ Proje Docker ile tek komutla ayağa kaldırılabilir.
 
 ### Gereksinimler
 - Docker & Docker Compose
-- FAL AI API Anahtarı ([fal.ai](https://fal.ai) üzerinden)
+- OpenRouter API Anahtarı ([openrouter.ai/keys](https://openrouter.ai/keys) üzerinden)
 
 ### Hızlı Başlangıç
 
@@ -83,7 +84,7 @@ Proje Docker ile tek komutla ayağa kaldırılabilir.
 2. **Ortam Değişkenlerini Ayarlayın**
    Proje kökünde `.env` dosyası oluşturun:
    ```bash
-   FAL_KEY=your_fal_api_key_here
+   OPENROUTER_API_KEY=sk-or-v1-your-openrouter-key-here
    ```
 
 3. **Uygulamayı Başlatın**
@@ -112,10 +113,23 @@ Manuel hasta bilgisi ile ilaç etkileşim analizi.
     {"id": "1", "name": "Lisinopril", "dosage": "10mg"}
   ],
   "newMedications": [
-    {"id": "2", "name": "Ibuprofen", "dosage": "400mg"}
+    {"id": "2", "name": "Ibuprofen", "dosage": "400mg"},
+    {
+      "id": "manual-1712345678",
+      "name": "Talcid",
+      "dosage": "500mg",
+      "frequency": "Günde 2 kez",
+      "notes": "Gastrik şikâyet için, 2 hafta",
+      "isManual": true
+    }
   ]
 }
 ```
+
+> `isManual: true` olan ilaçlar doktor tarafından elle yazılmıştır ve OpenFDA'da
+> kaydı olmayabilir; bu ilaçlar `doctor_manual_entries` olarak modele ayrıca
+> iletilir ve farmakolojik bilgi üzerinden değerlendirilir. `notes` alanı klinik
+> bağlam olarak analize dâhil edilir.
 
 **Yanıt:**
 ```json
@@ -191,11 +205,11 @@ druginteraction/
 │   │   ├── prefetch.py     # /prefetch
 │   │   └── health.py       # /health
 │   ├── services/           # İş mantığı katmanı
-│   │   ├── llm.py          # Claude Sonnet 4.5 entegrasyonu
+│   │   ├── llm.py          # Claude Sonnet entegrasyonu (OpenRouter)
 │   │   ├── openfda.py      # OpenFDA API istemcisi
 │   │   ├── anamnesis.py    # Belge okuma ve hasta bilgisi çıkarımı
 │   │   └── chat.py         # Sohbet servisi
-│   ├── config.py           # FAL AI istemci yapılandırması
+│   ├── config.py           # OpenRouter istemci yapılandırması
 │   ├── models.py           # Pydantic modelleri
 │   └── logger.py           # İstek loglama sistemi
 ├── components/             # React bileşenleri
@@ -221,7 +235,7 @@ druginteraction/
 |---|---|
 | Frontend | Next.js 16, React 19, Tailwind CSS 4, TypeScript |
 | Backend | Python 3.13, FastAPI, Uvicorn |
-| AI Model | Anthropic Claude Sonnet 4.5 (FAL AI proxy) |
+| AI Model | Anthropic Claude Sonnet (OpenRouter) |
 | Veri Kaynağı | OpenFDA API (api.fda.gov) |
 | Containerization | Docker (çok aşamalı build) |
 
