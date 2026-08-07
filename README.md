@@ -9,8 +9,8 @@ Neuropharm, OpenFDA veritabanını ve **Claude Sonnet** (OpenRouter üzerinden) 
 - **Canlı Veri:** İlaç etiketleri, güncel kara kutu uyarıları ve kontrendikasyonlar anlık olarak sorgulanır.
 - **Önbellekleme (Prefetch):** Hasta seçimi ve ilaç ekleme anında FDA verileri arka planda önceden çekilerek analiz süresi kısaltılır.
 
-### 2. Klinik AI Ajanı (Claude Sonnet)
-- **Model:** **OpenRouter** üzerinden **Anthropic Claude Sonnet** modeli kullanılır (`LLM_MODEL` ile değiştirilebilir).
+### 2. Klinik AI Ajanı (Claude Sonnet 5)
+- **Model:** **OpenRouter** üzerinden **Anthropic Claude Sonnet 5** (`anthropic/claude-sonnet-5`) kullanılır; `LLM_MODEL` ortam değişkeni ile değiştirilebilir.
 - **Rolü:** OpenFDA'dan çekilen ham klinik veriyi, bir klinik eczacı bakış açısıyla analiz eder, özetler ve Türkçeleştirir.
 - **Yeteneği:** Sadece veri listelemez; hastanın yaşına, cinsiyetine ve hastalıklarına göre risk değerlendirmesi yapar.
 
@@ -60,7 +60,7 @@ Sistem, tek bir Docker container içinde çalışan **hibrit** bir mimariye sahi
 1. **Prefetch:** Hasta seçimi/ilaç ekleme anında OpenFDA'dan veri arka planda çekilip önbelleğe alınır.
 2. **Analiz İsteği:** Frontend, Next.js API route üzerinden FastAPI backend'e POST isteği gönderir.
 3. **Veri Toplama:** Backend, ilaç isimlerini OpenFDA API'de arar; etiket bilgilerini (uyarılar, etkileşimler, dozaj) çeker.
-4. **AI Analizi:** Ham veri, özel sistem promptu ile OpenRouter üzerinden Claude Sonnet modeline gönderilir.
+4. **AI Analizi:** Ham veri, özel sistem promptu ile OpenRouter üzerinden Claude Sonnet 5 modeline gönderilir.
 5. **Sonuç:** AI, klinik değerlendirmeyi yapılandırılmış Türkçe JSON formatında döner.
 
 ---
@@ -235,7 +235,7 @@ druginteraction/
 |---|---|
 | Frontend | Next.js 16, React 19, Tailwind CSS 4, TypeScript |
 | Backend | Python 3.13, FastAPI, Uvicorn |
-| AI Model | Anthropic Claude Sonnet (OpenRouter) |
+| AI Model | Anthropic Claude Sonnet 5 (OpenRouter) |
 | Veri Kaynağı | OpenFDA API (api.fda.gov) |
 | Containerization | Docker (çok aşamalı build) |
 

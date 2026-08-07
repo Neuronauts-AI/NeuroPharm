@@ -6,7 +6,7 @@ import json
 import time
 from typing import Any, Dict, List
 
-from backend.config import llm_client, LLM_MODEL
+from backend.config import llm_client, log_llm_error, LLM_MODEL
 from backend.services.openfda import analyze_drug_interactions_openfda
 
 
@@ -138,7 +138,7 @@ Focus on:
             return json.loads(content)
 
     except Exception as e:
-        print(f"OpenAI evaluation error: {e}")
+        log_llm_error("LLM evaluation", e)
         return {**_FALLBACK_RESPONSE, "clinical_summary": "AI değerlendirme servisi şu anda yanıt veremiyor. Lütfen tekrar deneyin."}
 
 

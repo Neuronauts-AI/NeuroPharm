@@ -5,7 +5,7 @@ Chat service — streaming and non-streaming follow-up Q&A over analysis results
 import json
 from typing import Any, Dict, List
 
-from backend.config import llm_client, LLM_MODEL
+from backend.config import llm_client, log_llm_error, LLM_MODEL
 
 CHAT_SYSTEM_PROMPT = """Sen uzman bir klinik eczacısın. Görevin doktorun sorularına KISA, ÖZ ve NET cevaplar vermek.
 
@@ -65,7 +65,7 @@ def chat_with_analysis(
         )
         return response.choices[0].message.content
     except Exception as e:
-        print(f"Chat error: {e}")
+        log_llm_error("Chat", e)
         return "Üzgünüm, şu anda cevap veremiyorum."
 
 
@@ -89,5 +89,5 @@ def chat_with_analysis_stream(
             if chunk.choices and chunk.choices[0].delta and chunk.choices[0].delta.content:
                 yield chunk.choices[0].delta.content
     except Exception as e:
-        print(f"Chat stream error: {e}")
+        log_llm_error("Chat stream", e)
         yield "Üzgünüm, şu anda cevap veremiyorum."

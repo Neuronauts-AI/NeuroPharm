@@ -50,11 +50,35 @@ FAL_KEY = (os.getenv("FAL_KEY") or "").strip() or None
 _OPENROUTER_KEY_PREFIX = "sk-or-"
 
 # OpenRouter model slug (see https://openrouter.ai/models)
-LLM_MODEL = os.getenv("LLM_MODEL", "anthropic/claude-sonnet-4.6")
+LLM_MODEL = os.getenv("LLM_MODEL", "anthropic/claude-sonnet-5")
+
+
+_HEADER_TRANSLITERATION = str.maketrans({
+    "—": "-", "–": "-", "’": "'", "“": '"', "”": '"',
+    "ı": "i", "İ": "I", "ş": "s", "Ş": "S", "ğ": "g", "Ğ": "G",
+    "ü": "u", "Ü": "U", "ö": "o", "Ö": "O", "ç": "c", "Ç": "C",
+})
+
+
+def _ascii_header(value: str, fallback: str) -> str:
+    """
+    HTTP header values must be ASCII — httpx raises UnicodeEncodeError otherwise,
+    which would fail every LLM request. Transliterate what we can, drop the rest.
+    """
+    cleaned = value.translate(_HEADER_TRANSLITERATION)
+    cleaned = cleaned.encode("ascii", "ignore").decode("ascii").strip()
+    return cleaned or fallback
+
 
 # OpenRouter attribution headers (optional, shown on openrouter.ai dashboards)
-APP_PUBLIC_URL = os.getenv("APP_PUBLIC_URL", "https://github.com/Neuronauts-AI/NeuroPharm")
-APP_TITLE = os.getenv("APP_TITLE", "NeuroPharm — Drug Interaction Analysis")
+APP_PUBLIC_URL = _ascii_header(
+    os.getenv("APP_PUBLIC_URL", "https://github.com/Neuronauts-AI/NeuroPharm"),
+    "https://github.com/Neuronauts-AI/NeuroPharm",
+)
+APP_TITLE = _ascii_header(
+    os.getenv("APP_TITLE", "NeuroPharm Drug Interaction Analysis"),
+    "NeuroPharm",
+)
 
 
 # ──────────────────── LLM client ────────────────────
@@ -106,3 +130,16 @@ llm_client, LLM_PROVIDER = _build_llm_client()
 LLM_CONFIGURED = LLM_PROVIDER != "unconfigured"
 
 print(f"🧠 LLM provider: {LLM_PROVIDER} | model: {LLM_MODEL}")
+
+
+def log_llm_error(where: str, exc: Exception) -> None:
+    """Print an actionable LLM failure line (status code + provider message)."""
+    detail = ""
+    response = getattr(exc, "response", None)
+    if response is not None:
+        try:
+            detail = f" | HTTP {response.status_code}: {response.text[:500]}"
+        except Exception:
+            pass
+    print(f"❌ {where} failed [{type(exc).__name__}]: {exc}{detail} "
+          f"(provider={LLM_PROVIDER}, model={LLM_MODEL})")
