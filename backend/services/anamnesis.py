@@ -8,7 +8,7 @@ from typing import Any, Dict
 
 from fastapi import UploadFile
 
-from backend.config import llm_client, LLM_MODEL
+from backend.config import llm_client, log_llm_error, LLM_MODEL
 
 try:
     import pypdf
@@ -77,5 +77,5 @@ def extract_patient_info_from_text(anamnesis_text: str) -> Dict[str, Any]:
         )
         return json.loads(response.choices[0].message.content)
     except Exception as e:
-        print(f"Extraction error: {e}")
+        log_llm_error("Anamnesis extraction", e)
         return {"age": 45, "gender": "male", "conditions": [], "current_medications": []}
